@@ -78,6 +78,42 @@
       }
     }
     #canvasViewportWrapper:fullscreen { max-width: none; }
+
+    /* Layout editor: on-screen boxes for moving / resizing layers (never drawn into the video) */
+    #layoutEditor { position: absolute; z-index: 20; }
+    .layout-editing #canvasPlayOverlay { display: none; }
+    .layout-box {
+      position: absolute; box-sizing: border-box; border: 2px dashed var(--c);
+      border-radius: 6px; pointer-events: none; opacity: 0.55;
+    }
+    .layout-box.selected {
+      border-style: solid; opacity: 1; pointer-events: auto; cursor: move; z-index: 2;
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 18px -4px var(--c);
+    }
+    .layout-box .lb-tag {
+      position: absolute; top: 4px; left: 4px; pointer-events: auto; cursor: pointer;
+      font: 600 10px/1 Inter, sans-serif; padding: 3px 6px; border-radius: 4px;
+      background: var(--c); color: #0b1020; white-space: nowrap; user-select: none;
+    }
+    .layout-box[data-layer="lyrics"] .lb-tag { left: auto; right: 4px; }
+    .layout-box[data-layer="turntable"] .lb-tag { top: auto; bottom: 4px; }
+    .layout-box .lb-h {
+      position: absolute; width: 12px; height: 12px; display: none; box-sizing: border-box;
+      background: #fff; border: 2px solid var(--c); border-radius: 3px;
+    }
+    .layout-box.selected .lb-h { display: block; }
+    .lb-h[data-h="nw"] { left: 2px; top: 2px; cursor: nwse-resize; }
+    .lb-h[data-h="ne"] { right: 2px; top: 2px; cursor: nesw-resize; }
+    .lb-h[data-h="sw"] { left: 2px; bottom: 2px; cursor: nesw-resize; }
+    .lb-h[data-h="se"] { right: 2px; bottom: 2px; cursor: nwse-resize; }
+    .lb-h[data-h="n"] { left: calc(50% - 6px); top: 2px; cursor: ns-resize; }
+    .lb-h[data-h="s"] { left: calc(50% - 6px); bottom: 2px; cursor: ns-resize; }
+    .lb-h[data-h="w"] { top: calc(50% - 6px); left: 2px; cursor: ew-resize; }
+    .lb-h[data-h="e"] { top: calc(50% - 6px); right: 2px; cursor: ew-resize; }
+    .layout-guide { position: absolute; background: #f472b6; pointer-events: none; display: none; z-index: 3; }
+    .layout-guide.v { top: 0; bottom: 0; width: 1px; }
+    .layout-guide.h { left: 0; right: 0; height: 1px; }
     @keyframes pulse-red {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(1.15); }
@@ -328,6 +364,14 @@
               1920 &times; 1080 (16:9)
             </span>
 
+            <!-- Layout Editor Toggle -->
+            <button id="btnEditLayout" class="flex items-center space-x-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700 transition" title="Move &amp; resize the visualizer, turntable and lyrics (L)">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm9 0a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1h-5a1 1 0 01-1-1V5zm0 7a1 1 0 011-1h5a1 1 0 011 1v7a1 1 0 01-1 1h-5a1 1 0 01-1-1v-7zM4 15a1 1 0 011-1h5a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
+              </svg>
+              <span id="labelEditLayout">Layout</span>
+            </button>
+
             <!-- Fullscreen Button -->
             <button id="btnFullscreen" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition" title="Toggle Fullscreen">
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -347,6 +391,9 @@
             <span id="overlayTrackTitle" class="text-slate-200 font-medium">AuraLyrics Visualizer</span>
           </div>
 
+          <!-- Layout editor overlay (positioned over the canvas picture by syncLayoutEditor) -->
+          <div id="layoutEditor" class="hidden"></div>
+
           <!-- Play overlay on canvas when paused -->
           <div id="canvasPlayOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center transition opacity-100 cursor-pointer">
             <div class="w-16 h-16 rounded-full bg-pink-500/90 hover:bg-pink-500 text-white flex items-center justify-center shadow-xl shadow-pink-500/40 hover:scale-105 transition">
@@ -355,6 +402,19 @@
               </svg>
             </div>
           </div>
+        </div>
+
+        <!-- Layout Editor Toolbar (visible while editing the layout) -->
+        <div id="layoutToolbar" class="hidden mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px]">
+          <span class="text-slate-400 font-medium mr-0.5">Layer:</span>
+          <button data-layer-pick="visualizer" class="layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition">Visualizer</button>
+          <button data-layer-pick="turntable" class="layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition">Turntable</button>
+          <button data-layer-pick="lyrics" class="layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition">Lyrics</button>
+          <span class="flex-1"></span>
+          <button id="btnLayoutResetLayer" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reset the selected layer to its default position &amp; size">Reset</button>
+          <button id="btnLayoutResetAll" class="whitespace-nowrap px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Reset All</button>
+          <button id="btnLayoutDone" class="px-2.5 py-1 rounded-lg bg-pink-500 hover:bg-pink-600 text-white font-semibold transition">Done</button>
+          <p class="w-full text-[10px] text-slate-500">Drag to move &middot; handles resize &middot; Shift keeps proportions &middot; Alt disables snapping &middot; arrow keys nudge &middot; double-click resets &middot; Esc to finish</p>
         </div>
 
         <!-- Integrated Transport Bar -->
@@ -1096,7 +1156,9 @@
         turntableSpeed: 1.0,
         turntableSize: 100, // percentage
         turntableAngle: 0,
-        turntableImage: null
+        turntableImage: null,
+        // Per-layer placement as fractions of the frame {x, y, w, h}; null = default placement
+        layers: { visualizer: null, turntable: null, lyrics: null }
       },
       export: {
         format: 'mp4',
@@ -1821,6 +1883,26 @@
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
 
+      // Layout editor shortcuts: L toggles, Esc finishes, arrow keys nudge the selected layer
+      if (layoutEditing) {
+        if (e.code === 'Escape') {
+          setLayoutEditing(false);
+          return;
+        }
+        const step = e.shiftKey ? 0.02 : 0.005;
+        const arrows = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+        if (arrows[e.code]) {
+          e.preventDefault();
+          nudgeSelectedLayer(...arrows[e.code]);
+          return;
+        }
+      }
+      if (e.code === 'KeyL' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setLayoutEditing(!layoutEditing);
+        return;
+      }
+
       if (e.code === 'Space') {
         e.preventDefault();
         togglePlay();
@@ -2430,6 +2512,239 @@
     }
     updateCanvasResolution();
 
+    // --- LAYER LAYOUT: movable / resizable Visualizer, Turntable & Lyrics ---
+    // Boxes are stored as fractions of the frame, so a layout survives resolution / aspect changes.
+    const LAYOUT_LAYERS = {
+      visualizer: { label: 'Visualizer', color: '#22d3ee' },
+      turntable: { label: 'Turntable', color: '#fbbf24' },
+      lyrics: { label: 'Lyrics', color: '#f472b6' }
+    };
+    const TURNTABLE_BOX_FRACTION = 0.19 / 0.46; // default box hugs the disc at 100% scale
+    const LAYOUT_MIN_SIZE = 0.04;
+    const LAYOUT_SNAP = 0.012;
+
+    function defaultLayerBox(name, W, H) {
+      if (name === 'turntable') {
+        const side = Math.min(W, H) * TURNTABLE_BOX_FRACTION;
+        return { x: (W - side) / 2 / W, y: (H - side) / 2 / H, w: side / W, h: side / H };
+      }
+      return { x: 0, y: 0, w: 1, h: 1 };
+    }
+
+    function getLayerBox(name, W, H) {
+      return state.visualizer.layers[name] || defaultLayerBox(name, W, H);
+    }
+
+    function layerPixelRect(name, W, H) {
+      const b = getLayerBox(name, W, H);
+      return { x: b.x * W, y: b.y * H, w: Math.max(1, b.w * W), h: Math.max(1, b.h * H) };
+    }
+
+    // var (not let) so renderFrame can read it safely before this block has run
+    var layoutEditing = false;
+    let selectedLayer = 'visualizer';
+    let layoutDrag = null;
+    const layoutEditor = document.getElementById('layoutEditor');
+    const layoutToolbar = document.getElementById('layoutToolbar');
+    const btnEditLayout = document.getElementById('btnEditLayout');
+    const labelEditLayout = document.getElementById('labelEditLayout');
+    const layoutBoxes = {};
+    const guideV = document.createElement('div');
+    const guideH = document.createElement('div');
+    guideV.className = 'layout-guide v';
+    guideH.className = 'layout-guide h';
+
+    for (const [name, meta] of Object.entries(LAYOUT_LAYERS)) {
+      const box = document.createElement('div');
+      box.className = 'layout-box';
+      box.dataset.layer = name;
+      box.style.setProperty('--c', meta.color);
+      box.innerHTML = `<span class="lb-tag">${meta.label}</span>` +
+        ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].map(h => `<span class="lb-h" data-h="${h}"></span>`).join('');
+      layoutEditor.appendChild(box);
+      layoutBoxes[name] = box;
+    }
+    layoutEditor.append(guideV, guideH);
+
+    function layerAvailable(name) {
+      return name !== 'turntable' || state.visualizer.turntableEnabled;
+    }
+
+    // Aligns the editor with the picture actually shown (the canvas is object-contain inside the wrapper)
+    function syncLayoutEditor() {
+      const W = visualizerCanvas.width, H = visualizerCanvas.height;
+      const cw = visualizerCanvas.clientWidth, ch = visualizerCanvas.clientHeight;
+      const scale = Math.min(cw / W, ch / H);
+      const dw = W * scale, dh = H * scale;
+      layoutEditor.style.left = `${visualizerCanvas.offsetLeft + (cw - dw) / 2}px`;
+      layoutEditor.style.top = `${visualizerCanvas.offsetTop + (ch - dh) / 2}px`;
+      layoutEditor.style.width = `${dw}px`;
+      layoutEditor.style.height = `${dh}px`;
+
+      if (!layerAvailable(selectedLayer)) selectedLayer = 'visualizer';
+      for (const [name, box] of Object.entries(layoutBoxes)) {
+        const b = getLayerBox(name, W, H);
+        box.style.left = `${b.x * 100}%`;
+        box.style.top = `${b.y * 100}%`;
+        box.style.width = `${b.w * 100}%`;
+        box.style.height = `${b.h * 100}%`;
+        box.style.display = layerAvailable(name) ? '' : 'none';
+        box.classList.toggle('selected', name === selectedLayer);
+      }
+      document.querySelectorAll('.layer-pick').forEach(btn => {
+        const name = btn.dataset.layerPick;
+        const active = name === selectedLayer;
+        const meta = LAYOUT_LAYERS[name];
+        btn.style.background = active ? meta.color : '';
+        btn.style.color = active ? '#0b1020' : (layerAvailable(name) ? '#cbd5e1' : '#475569');
+        btn.style.borderColor = active ? meta.color : '';
+        btn.disabled = !layerAvailable(name);
+        btn.title = layerAvailable(name) ? '' : 'Enable the Rotating Turntable to position it';
+      });
+    }
+
+    function setLayoutEditing(on) {
+      layoutEditing = on;
+      layoutEditor.classList.toggle('hidden', !on);
+      layoutToolbar.classList.toggle('hidden', !on);
+      canvasViewportWrapper.classList.toggle('layout-editing', on);
+      labelEditLayout.textContent = on ? 'Done' : 'Layout';
+      btnEditLayout.classList.toggle('bg-pink-500', on);
+      btnEditLayout.classList.toggle('text-white', on);
+      btnEditLayout.classList.toggle('border-pink-500', on);
+      if (on) syncLayoutEditor();
+    }
+
+    function selectLayer(name) {
+      if (!layerAvailable(name)) return;
+      selectedLayer = name;
+      syncLayoutEditor();
+    }
+
+    function resetLayer(name) {
+      state.visualizer.layers[name] = null;
+      syncLayoutEditor();
+    }
+
+    btnEditLayout.addEventListener('click', () => setLayoutEditing(!layoutEditing));
+    document.getElementById('btnLayoutDone').addEventListener('click', () => setLayoutEditing(false));
+    document.getElementById('btnLayoutResetLayer').addEventListener('click', () => resetLayer(selectedLayer));
+    document.getElementById('btnLayoutResetAll').addEventListener('click', () => Object.keys(LAYOUT_LAYERS).forEach(resetLayer));
+    document.querySelectorAll('.layer-pick').forEach(btn => btn.addEventListener('click', () => selectLayer(btn.dataset.layerPick)));
+
+    // Snaps a value to the nearest target (frame edges / centre) within LAYOUT_SNAP
+    function snapTo(value, targets) {
+      for (const t of targets) if (Math.abs(value - t) < LAYOUT_SNAP) return t;
+      return null;
+    }
+
+    function showGuide(el, pos, vertical) {
+      if (pos === null) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      if (vertical) el.style.left = `${pos * 100}%`; else el.style.top = `${pos * 100}%`;
+    }
+
+    layoutEditor.addEventListener('pointerdown', (e) => {
+      const box = e.target.closest('.layout-box');
+      if (!box) return;
+      const name = box.dataset.layer;
+      e.preventDefault();
+      if (name !== selectedLayer) {
+        selectLayer(name); // clicking another layer's tag selects it
+        return;
+      }
+      const W = visualizerCanvas.width, H = visualizerCanvas.height;
+      const rect = layoutEditor.getBoundingClientRect();
+      layoutDrag = {
+        name,
+        handle: e.target.dataset.h || null,
+        sx: e.clientX,
+        sy: e.clientY,
+        start: { ...getLayerBox(name, W, H) },
+        rw: rect.width,
+        rh: rect.height
+      };
+      layoutEditor.setPointerCapture(e.pointerId);
+    });
+
+    layoutEditor.addEventListener('pointermove', (e) => {
+      if (!layoutDrag) return;
+      const { start, handle } = layoutDrag;
+      const dx = (e.clientX - layoutDrag.sx) / layoutDrag.rw;
+      const dy = (e.clientY - layoutDrag.sy) / layoutDrag.rh;
+      const snap = !e.altKey;
+      let gx = null, gy = null;
+      let box;
+
+      if (!handle) {
+        // Move: snap left/centre/right and top/middle/bottom to the frame edges & centre
+        let x = start.x + dx, y = start.y + dy;
+        if (snap) {
+          const cands = [[x, [0, 0.5], 0], [x + start.w / 2, [0.5], start.w / 2], [x + start.w, [0.5, 1], start.w]];
+          for (const [v, targets, off] of cands) { const t = snapTo(v, targets); if (t !== null) { x = t - off; gx = t; break; } }
+          const candsY = [[y, [0, 0.5], 0], [y + start.h / 2, [0.5], start.h / 2], [y + start.h, [0.5, 1], start.h]];
+          for (const [v, targets, off] of candsY) { const t = snapTo(v, targets); if (t !== null) { y = t - off; gy = t; break; } }
+        }
+        // Keep at least a sliver of the layer on screen
+        x = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - start.w, x));
+        y = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - start.h, y));
+        box = { x, y, w: start.w, h: start.h };
+      } else {
+        let l = start.x, t = start.y, r = start.x + start.w, b = start.y + start.h;
+        if (handle.includes('w')) l += dx;
+        if (handle.includes('e')) r += dx;
+        if (handle.includes('n')) t += dy;
+        if (handle.includes('s')) b += dy;
+        if (snap) {
+          const edges = [0, 0.5, 1];
+          if (handle.includes('w')) { const s2 = snapTo(l, edges); if (s2 !== null) { l = s2; gx = s2; } }
+          if (handle.includes('e')) { const s2 = snapTo(r, edges); if (s2 !== null) { r = s2; gx = s2; } }
+          if (handle.includes('n')) { const s2 = snapTo(t, edges); if (s2 !== null) { t = s2; gy = s2; } }
+          if (handle.includes('s')) { const s2 = snapTo(b, edges); if (s2 !== null) { b = s2; gy = s2; } }
+        }
+        if (r - l < LAYOUT_MIN_SIZE) { if (handle.includes('w')) l = r - LAYOUT_MIN_SIZE; else r = l + LAYOUT_MIN_SIZE; }
+        if (b - t < LAYOUT_MIN_SIZE) { if (handle.includes('n')) t = b - LAYOUT_MIN_SIZE; else b = t + LAYOUT_MIN_SIZE; }
+
+        // Shift + corner: keep the original proportions, anchored at the opposite corner
+        if (e.shiftKey && handle.length === 2) {
+          const ratio = start.w / start.h;
+          let w = r - l, h = b - t;
+          if (w / ratio > h) h = w / ratio; else w = h * ratio;
+          if (handle.includes('w')) l = r - w; else r = l + w;
+          if (handle.includes('n')) t = b - h; else b = t + h;
+          gx = gy = null;
+        }
+        box = { x: l, y: t, w: r - l, h: b - t };
+      }
+
+      state.visualizer.layers[layoutDrag.name] = box;
+      showGuide(guideV, gx, true);
+      showGuide(guideH, gy, false);
+      syncLayoutEditor();
+    });
+
+    const endLayoutDrag = () => {
+      layoutDrag = null;
+      showGuide(guideV, null, true);
+      showGuide(guideH, null, false);
+    };
+    layoutEditor.addEventListener('pointerup', endLayoutDrag);
+    layoutEditor.addEventListener('pointercancel', endLayoutDrag);
+    layoutEditor.addEventListener('dblclick', (e) => {
+      const box = e.target.closest('.layout-box');
+      if (box) resetLayer(box.dataset.layer);
+    });
+
+    // Arrow-key nudging while editing (Shift = bigger steps)
+    function nudgeSelectedLayer(dx, dy) {
+      const W = visualizerCanvas.width, H = visualizerCanvas.height;
+      const b = { ...getLayerBox(selectedLayer, W, H) };
+      b.x = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - b.w, b.x + dx));
+      b.y = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - b.h, b.y + dy));
+      state.visualizer.layers[selectedLayer] = b;
+      syncLayoutEditor();
+    }
+
     // --- CANVAS VISUALIZER RENDERING ENGINE ---
     let animationFrameId = null;
 
@@ -2476,43 +2791,45 @@
       drawBackground(ctx, width, height, palette, bassEnergy);
 
       // 2. Draw Active Visualizer Mode
+      const vRect = layerPixelRect('visualizer', width, height);
       ctx.save();
+      ctx.translate(vRect.x, vRect.y);
       switch (state.visualizer.mode) {
         case 'radial':
-          drawRadialSpectrum(ctx, width, height, palette, bassEnergy, midEnergy, reactivity, glowAmt);
+          drawRadialSpectrum(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
           break;
         case 'equalizer':
-          drawCyberEqualizer(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          drawCyberEqualizer(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'waveform':
-          drawNeonWaveform(ctx, width, height, palette, bassEnergy, glowAmt);
+          drawNeonWaveform(ctx, vRect.w, vRect.h, palette, bassEnergy, glowAmt);
           break;
         case 'nebula':
-          drawCosmicVortex(ctx, width, height, palette, bassEnergy, midEnergy, glowAmt);
+          drawCosmicVortex(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
           break;
         case 'aurora':
-          drawAuroraRibbons(ctx, width, height, palette, bassEnergy, midEnergy, glowAmt);
+          drawAuroraRibbons(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
           break;
         case 'dualring':
-          drawDualInfinity(ctx, width, height, palette, bassEnergy, midEnergy, glowAmt);
+          drawDualInfinity(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
           break;
         case 'pulserings':
-          drawPulseRings(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          drawPulseRings(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'mirrorbars':
-          drawMirrorBars(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          drawMirrorBars(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'inferno':
-          drawInfernoSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          drawInfernoSpectrum(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'spiralburst':
-          drawSpiralBurst(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          drawSpiralBurst(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'vumeter':
-          drawVuMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          drawVuMeter(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         default:
-          drawRadialSpectrum(ctx, width, height, palette, bassEnergy, midEnergy, reactivity, glowAmt);
+          drawRadialSpectrum(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
       }
       ctx.restore();
 
@@ -2523,11 +2840,22 @@
 
       // 2.8 Draw Rotating Vinyl Turntable with Circular Clipped Artwork (if enabled)
       if (state.visualizer.turntableEnabled) {
-        drawRotatingTurntable(ctx, width, height, palette, bassEnergy);
+        const tRect = layerPixelRect('turntable', width, height);
+        ctx.save();
+        ctx.translate(tRect.x, tRect.y);
+        drawRotatingTurntable(ctx, tRect.w, tRect.h, palette, bassEnergy);
+        ctx.restore();
       }
 
       // 3. Draw Synchronized Embedded Lyrics
-      drawEmbeddedLyrics(ctx, width, height, palette, bassEnergy);
+      const lRect = layerPixelRect('lyrics', width, height);
+      ctx.save();
+      ctx.translate(lRect.x, lRect.y);
+      drawEmbeddedLyrics(ctx, lRect.w, lRect.h, palette, bassEnergy);
+      ctx.restore();
+
+      // Keep the on-screen layout editor aligned with the picture while editing
+      if (layoutEditing) syncLayoutEditor();
 
       // 4. Update Recording HUD Timer if recording
       if (state.export.isRecording) {
@@ -3251,7 +3579,8 @@
       const cy = height / 2;
       const scale = (state.visualizer.turntableSize || 100) / 100;
       const bounce = state.visualizer.bassBounce ? (1 + bassEnergy * 0.1) : 1;
-      const outerRadius = Math.min(width, height) * 0.19 * scale * bounce;
+      // Disc fills ~92% of its layout box (the default box reproduces the original 0.19 x frame size)
+      const outerRadius = Math.min(width, height) * 0.46 * scale * bounce;
       const artRadius = outerRadius * 0.66;
 
       // Advance rotation angle smoothly when playing (or subtle idle drift)
@@ -3388,9 +3717,25 @@
       }
 
       const fontName = state.visualizer.font;
-      const baseSize = state.visualizer.textSize * (width / 1280); // scale proportionally to resolution
+      // Scale with the lyrics box (identical to the old width/1280 rule for every full-frame preset)
+      const baseSize = state.visualizer.textSize * Math.min(width / 1280, height / 720);
       const bounce = state.visualizer.bassBounce ? (1 + bassEnergy * 0.08) : 1;
-      const actualSize = Math.round(baseSize * bounce);
+      let actualSize = Math.round(baseSize * bounce);
+
+      // Shrink long lines so they fit inside the lyrics box instead of running off the edge
+      {
+        const layout = state.visualizer.layout;
+        ctx.font = `700 ${actualSize}px "${fontName}", sans-serif`;
+        let widest = ctx.measureText(currentLine.text).width;
+        const side = layout === 'teleprompter'
+          ? [lyrics[activeIdx - 2], prevLine, nextLine, lyrics[activeIdx + 2]]
+          : (layout === 'kinetic' ? [prevLine, nextLine] : []);
+        const sideScale = layout === 'teleprompter' ? 0.65 : 0.55;
+        for (const l of side) if (l) widest = Math.max(widest, ctx.measureText(l.text).width * sideScale);
+        const pad = layout === 'kinetic' ? (state.visualizer.backdropPill ? actualSize * 1.4 : 0) : (layout === 'teleprompter' ? 0 : 60);
+        const avail = width * 0.94;
+        if (widest + pad > avail) actualSize = Math.max(8, Math.floor(actualSize * avail / (widest + pad)));
+      }
 
       const yPercent = state.visualizer.textPos / 100;
       const targetY = height * yPercent;
