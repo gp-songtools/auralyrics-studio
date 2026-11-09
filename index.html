@@ -455,6 +455,90 @@
             </div>
           </div>
 
+          <!-- Palette Editor -->
+          <details id="paletteEditor" class="rounded-xl bg-slate-900/70 border border-slate-800">
+            <summary class="cursor-pointer select-none px-3 py-2 text-xs font-semibold text-slate-200 flex items-center justify-between">
+              <span>Palette Editor</span>
+              <span id="paletteEditorStatus" class="text-[10px] font-normal text-slate-500"></span>
+            </summary>
+            <div class="px-3 pb-3 space-y-2.5">
+              <div class="grid grid-cols-5 gap-2">
+              <label class="flex flex-col items-center gap-1 text-[10px] text-slate-400">
+                <input type="color" data-pal-key="primary" class="pal-swatch w-full h-8 rounded-lg cursor-pointer bg-transparent border border-slate-700" />
+                <span>Primary</span>
+              </label>
+              <label class="flex flex-col items-center gap-1 text-[10px] text-slate-400">
+                <input type="color" data-pal-key="secondary" class="pal-swatch w-full h-8 rounded-lg cursor-pointer bg-transparent border border-slate-700" />
+                <span>Secondary</span>
+              </label>
+              <label class="flex flex-col items-center gap-1 text-[10px] text-slate-400">
+                <input type="color" data-pal-key="accent" class="pal-swatch w-full h-8 rounded-lg cursor-pointer bg-transparent border border-slate-700" />
+                <span>Accent</span>
+              </label>
+              <label class="flex flex-col items-center gap-1 text-[10px] text-slate-400">
+                <input type="color" data-pal-key="bg0" class="pal-swatch w-full h-8 rounded-lg cursor-pointer bg-transparent border border-slate-700" />
+                <span>Background</span>
+              </label>
+              <label class="flex flex-col items-center gap-1 text-[10px] text-slate-400">
+                <input type="color" data-pal-key="bg1" class="pal-swatch w-full h-8 rounded-lg cursor-pointer bg-transparent border border-slate-700" />
+                <span>Bg Glow</span>
+              </label>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="inputPaletteName" maxlength="32" placeholder="Name this palette…" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-pink-500" />
+                <button id="btnSavePalette" class="px-3 py-1.5 rounded-lg bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold transition">Save Palette</button>
+              </div>
+              <div class="flex items-center justify-between text-[11px]">
+                <button id="btnRevertPalette" class="text-slate-400 hover:text-slate-200 transition">Revert changes</button>
+                <button id="btnDeletePalette" class="hidden text-rose-400 hover:text-rose-300 transition">Delete this palette</button>
+              </div>
+              <p class="text-[10px] text-slate-500">Edits preview live. Saved palettes appear under <strong class="text-slate-400">My Palettes</strong> in the preset list and are kept in this browser.</p>
+            </div>
+          </details>
+
+          <!-- Background Image -->
+          <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-200">Background Image</span>
+              <div class="flex items-center gap-2">
+                <label class="text-[10px] px-2 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 cursor-pointer hover:bg-cyan-500/20 transition">
+                  <span id="labelBgImageUpload">Upload Image</span>
+                  <input type="file" id="bgImageInput" accept="image/*" class="hidden" />
+                </label>
+                <button id="btnClearBgImage" class="hidden text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Remove</button>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-500">Sits behind everything; the Background Style above is layered on top (stars, grid or vignette; choose Pure Black for the image alone).</p>
+            <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+              <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Fit</label>
+                <select id="selectBgImageFit" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500">
+                  <option value="cover" selected>Cover (fill &amp; crop)</option>
+                  <option value="contain">Contain (whole image)</option>
+                  <option value="stretch">Stretch</option>
+                </select>
+              </div>
+              <label class="flex items-end pb-1.5 space-x-2 cursor-pointer text-[11px] text-slate-300">
+                <input type="checkbox" id="checkBgImagePulse" class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
+                <span>Pulse with bass</span>
+              </label>
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <span>Dim</span>
+                  <span id="labelBgImageDim">35%</span>
+                </div>
+                <input type="range" id="sliderBgImageDim" min="0" max="90" step="5" value="35" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-slate-400" />
+              </div>
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <span>Blur</span>
+                  <span id="labelBgImageBlur">0px</span>
+                </div>
+                <input type="range" id="sliderBgImageBlur" min="0" max="20" step="1" value="0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
+              </div>
+            </div>
+          </div>
+
           <!-- Slider Controls -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
@@ -517,6 +601,33 @@
                     <span id="labelParticleDensity">45</span>
                   </div>
                   <input type="range" id="sliderParticleDensity" min="15" max="100" step="5" value="45" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400 mt-1.5" />
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Motion</label>
+                  <select id="selectParticleMotion" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500">
+                    <option value="drift" selected>Drift</option>
+                    <option value="burst">Radial Burst</option>
+                    <option value="implode">Implode</option>
+                    <option value="swirl-cw">Swirl &#8635;</option>
+                    <option value="swirl-ccw">Swirl &#8634;</option>
+                    <option value="vortex">Vortex</option>
+                  </select>
+                </div>
+                <div id="particleDirectionWrap">
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Direction</span>
+                    <span id="labelParticleDirection">&#8593; 0&deg;</span>
+                  </div>
+                  <input type="range" id="sliderParticleDirection" min="0" max="355" step="5" value="0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1.5" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Speed</span>
+                    <span id="labelParticleSpeed">1.0x</span>
+                  </div>
+                  <input type="range" id="sliderParticleSpeed" min="0.2" max="4" step="0.1" value="1" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-1.5" />
                 </div>
               </div>
             </div>
@@ -1198,6 +1309,14 @@
         floatingParticles: true,
         particleStyle: 'orbs', // orbs, sparks, notes, stardust
         particleDensity: 45,
+        particleMotion: 'drift', // drift, burst, implode, swirl-cw, swirl-ccw, vortex
+        particleDirection: 0, // degrees, 0 = up, clockwise (drift only)
+        particleSpeed: 1.0,
+        bgImage: null,
+        bgImageFit: 'cover', // cover, contain, stretch
+        bgImageDim: 0.35,
+        bgImageBlur: 0,
+        bgImagePulse: false,
         turntableEnabled: true,
         turntableSpeed: 1.0,
         turntableSize: 100, // percentage
@@ -2554,6 +2673,220 @@
       showToast('Turntable cover reset to default vinyl label', 'info');
     });
 
+    // --- PALETTE EDITOR: live-preview edits, save named palettes under "My Palettes" ---
+    const CUSTOM_PALETTES_KEY = 'aura_palettes_v1';
+    const PALETTE_FIELDS = ['primary', 'secondary', 'accent', 'bg0', 'bg1'];
+    const isHexColor = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+    const paletteEditorStatus = document.getElementById('paletteEditorStatus');
+    const inputPaletteName = document.getElementById('inputPaletteName');
+    const btnDeletePalette = document.getElementById('btnDeletePalette');
+    const paletteSwatches = [...document.querySelectorAll('.pal-swatch')];
+
+    function paletteToFields(p) {
+      return { primary: p.primary, secondary: p.secondary, accent: p.accent, bg0: p.bgGradient[0], bg1: p.bgGradient[1] };
+    }
+
+    function fieldsToPalette(f) {
+      const n = parseInt(f.primary.slice(1), 16);
+      return {
+        primary: f.primary,
+        secondary: f.secondary,
+        accent: f.accent,
+        glow: `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, 0.6)`,
+        bgGradient: [f.bg0, f.bg1, f.bg1]
+      };
+    }
+
+    let customPalettes = {};
+    try {
+      const raw = JSON.parse(localStorage.getItem(CUSTOM_PALETTES_KEY) || '{}');
+      for (const [name, f] of Object.entries(raw || {})) {
+        if (name && f && PALETTE_FIELDS.every(k => isHexColor(f[k]))) customPalettes[name] = f;
+      }
+    } catch (e) {}
+
+    const myPalettesGroup = document.createElement('optgroup');
+    myPalettesGroup.label = 'My Palettes';
+    selectColorTheme.appendChild(myPalettesGroup);
+
+    function rebuildCustomPaletteOptions() {
+      myPalettesGroup.innerHTML = '';
+      for (const name of Object.keys(customPalettes).sort((a, b) => a.localeCompare(b))) {
+        PALETTES['my:' + name] = fieldsToPalette(customPalettes[name]);
+        const opt = document.createElement('option');
+        opt.value = 'my:' + name;
+        opt.textContent = name;
+        myPalettesGroup.appendChild(opt);
+      }
+      myPalettesGroup.hidden = !myPalettesGroup.children.length;
+    }
+
+    function persistCustomPalettes() {
+      try { localStorage.setItem(CUSTOM_PALETTES_KEY, JSON.stringify(customPalettes)); } catch (e) {}
+    }
+
+    function readSwatches() {
+      const f = {};
+      paletteSwatches.forEach(sw => { f[sw.dataset.palKey] = sw.value; });
+      return f;
+    }
+
+    // Loads the selected palette into the editor and discards any unsaved draft
+    function loadPaletteEditor(key) {
+      const p = PALETTES[key] || PALETTES.cyberpunk;
+      const f = paletteToFields(p);
+      paletteSwatches.forEach(sw => { sw.value = f[sw.dataset.palKey]; });
+      const isCustom = key.startsWith('my:');
+      inputPaletteName.value = isCustom ? key.slice(3) : '';
+      btnDeletePalette.classList.toggle('hidden', !isCustom);
+      paletteEditorStatus.textContent = isCustom ? 'Editing your palette' : 'Edit colors to make your own';
+      delete PALETTES.__draft;
+      state.visualizer.theme = key;
+    }
+
+    paletteSwatches.forEach(sw => sw.addEventListener('input', () => {
+      PALETTES.__draft = fieldsToPalette(readSwatches());
+      state.visualizer.theme = '__draft';
+      paletteEditorStatus.textContent = 'Unsaved changes';
+    }));
+
+    selectColorTheme.addEventListener('change', () => loadPaletteEditor(selectColorTheme.value));
+
+    document.getElementById('btnSavePalette').addEventListener('click', () => {
+      const name = inputPaletteName.value.trim().replace(/\s+/g, ' ');
+      if (!name) {
+        showToast('Give your palette a name first', 'error');
+        inputPaletteName.focus();
+        return;
+      }
+      const key = 'my:' + name;
+      if (customPalettes[name] && selectColorTheme.value !== key && !confirm(`Replace your saved palette "${name}"?`)) return;
+      customPalettes[name] = readSwatches();
+      persistCustomPalettes();
+      rebuildCustomPaletteOptions();
+      selectColorTheme.value = key;
+      selectColorTheme.dispatchEvent(new Event('change', { bubbles: true }));
+      showToast(`Palette "${name}" saved`, 'success');
+    });
+
+    document.getElementById('btnRevertPalette').addEventListener('click', () => loadPaletteEditor(selectColorTheme.value));
+
+    btnDeletePalette.addEventListener('click', () => {
+      const key = selectColorTheme.value;
+      if (!key.startsWith('my:')) return;
+      const name = key.slice(3);
+      if (!confirm(`Delete the palette "${name}"?`)) return;
+      delete customPalettes[name];
+      delete PALETTES[key];
+      persistCustomPalettes();
+      rebuildCustomPaletteOptions();
+      selectColorTheme.value = 'cyberpunk';
+      selectColorTheme.dispatchEvent(new Event('change', { bubbles: true }));
+      showToast(`Palette "${name}" deleted`, 'info');
+    });
+
+    rebuildCustomPaletteOptions();
+    loadPaletteEditor(selectColorTheme.value);
+
+    // --- PARTICLE MOTION CONTROLS ---
+    const selectParticleMotion = document.getElementById('selectParticleMotion');
+    const sliderParticleDirection = document.getElementById('sliderParticleDirection');
+    const labelParticleDirection = document.getElementById('labelParticleDirection');
+    const sliderParticleSpeed = document.getElementById('sliderParticleSpeed');
+    const labelParticleSpeed = document.getElementById('labelParticleSpeed');
+    const particleDirectionWrap = document.getElementById('particleDirectionWrap');
+    const DIRECTION_ARROWS = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
+
+    selectParticleMotion.addEventListener('change', (e) => {
+      state.visualizer.particleMotion = e.target.value;
+      // Direction only applies to Drift; radial & swirl motions centre on the visualizer layer
+      const drift = e.target.value === 'drift';
+      particleDirectionWrap.classList.toggle('opacity-40', !drift);
+      sliderParticleDirection.disabled = !drift;
+      particleDirectionWrap.title = drift ? '' : 'Direction applies to Drift motion';
+    });
+    sliderParticleDirection.addEventListener('input', (e) => {
+      const deg = parseInt(e.target.value, 10);
+      state.visualizer.particleDirection = deg;
+      labelParticleDirection.textContent = `${DIRECTION_ARROWS[Math.round(deg / 45) % 8]} ${deg}°`;
+    });
+    sliderParticleSpeed.addEventListener('input', (e) => {
+      state.visualizer.particleSpeed = parseFloat(e.target.value);
+      labelParticleSpeed.textContent = `${state.visualizer.particleSpeed.toFixed(1)}x`;
+    });
+
+    // --- BACKGROUND IMAGE ---
+    const BG_IMAGE_KEY = 'aura_bg_image_v1';
+    const bgImageInput = document.getElementById('bgImageInput');
+    const btnClearBgImage = document.getElementById('btnClearBgImage');
+    const labelBgImageUpload = document.getElementById('labelBgImageUpload');
+    let bgImageSerial = 0;
+
+    function setBgImage(img) {
+      if (img) img.__auraId = ++bgImageSerial;
+      state.visualizer.bgImage = img;
+      btnClearBgImage.classList.toggle('hidden', !img);
+      labelBgImageUpload.textContent = img ? 'Replace Image' : 'Upload Image';
+    }
+
+    function saveBgImage(img) {
+      try {
+        if (!img) { localStorage.removeItem(BG_IMAGE_KEY); return; }
+        const max = 1920;
+        const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        localStorage.setItem(BG_IMAGE_KEY, c.toDataURL('image/webp', 0.85));
+      } catch (e) {
+        showToast('Background image is too large to remember after reload, but it is in use now', 'info');
+      }
+    }
+
+    bgImageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          setBgImage(img);
+          saveBgImage(img);
+          showToast('Background image added!', 'success');
+        };
+        img.onerror = () => showToast('Could not read that image file', 'error');
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+      bgImageInput.value = '';
+    });
+    btnClearBgImage.addEventListener('click', () => {
+      setBgImage(null);
+      saveBgImage(null);
+      showToast('Background image removed', 'info');
+    });
+
+    document.getElementById('selectBgImageFit').addEventListener('change', (e) => { state.visualizer.bgImageFit = e.target.value; });
+    document.getElementById('checkBgImagePulse').addEventListener('change', (e) => { state.visualizer.bgImagePulse = e.target.checked; });
+    document.getElementById('sliderBgImageDim').addEventListener('input', (e) => {
+      state.visualizer.bgImageDim = parseInt(e.target.value, 10) / 100;
+      document.getElementById('labelBgImageDim').textContent = `${e.target.value}%`;
+    });
+    document.getElementById('sliderBgImageBlur').addEventListener('input', (e) => {
+      state.visualizer.bgImageBlur = parseInt(e.target.value, 10);
+      document.getElementById('labelBgImageBlur').textContent = `${e.target.value}px`;
+    });
+
+    try {
+      const savedBg = localStorage.getItem(BG_IMAGE_KEY);
+      if (savedBg) {
+        const img = new Image();
+        img.onload = () => setBgImage(img);
+        img.src = savedBg;
+      }
+    } catch (e) {}
+
     exportFormat.addEventListener('change', (e) => {
       state.export.format = e.target.value;
     });
@@ -2952,25 +3285,83 @@
     }
 
     // --- Background Renderer ---
-    function drawBackground(ctx, width, height, palette, bassEnergy) {
-      if (state.visualizer.bgStyle === 'solid') {
-        ctx.fillStyle = '#020617';
+    // Background image is pre-rendered (fit + blur) into a cached frame-sized canvas, then
+    // composited each frame with optional bass pulse and a dimming layer.
+    let bgImageCache = { key: '', canvas: null };
+
+    function drawBackgroundImage(ctx, width, height, palette, bassEnergy) {
+      const img = state.visualizer.bgImage;
+      if (!img || !img.naturalWidth) return false;
+      const fit = state.visualizer.bgImageFit || 'cover';
+      const blurPx = (state.visualizer.bgImageBlur || 0) * (width / 1280);
+      const key = `${width}x${height}|${fit}|${blurPx}|${img.__auraId}|${palette.bgGradient[0]}`;
+      if (bgImageCache.key !== key) {
+        const c = bgImageCache.canvas || document.createElement('canvas');
+        c.width = width;
+        c.height = height;
+        const cx = c.getContext('2d');
+        cx.fillStyle = palette.bgGradient[0];
+        cx.fillRect(0, 0, width, height);
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        let dw = width, dh = height;
+        if (fit !== 'stretch') {
+          const sc = fit === 'cover' ? Math.max(width / iw, height / ih) : Math.min(width / iw, height / ih);
+          dw = iw * sc;
+          dh = ih * sc;
+        }
+        // Overscan when blurring so the soft edges stay outside the frame
+        const over = fit === 'contain' ? 0 : blurPx * 2;
+        if (blurPx > 0) cx.filter = `blur(${blurPx}px)`;
+        cx.drawImage(img, (width - dw) / 2 - over, (height - dh) / 2 - over, dw + over * 2, dh + over * 2);
+        cx.filter = 'none';
+        bgImageCache = { key, canvas: c };
+      }
+      const pulse = state.visualizer.bgImagePulse ? 1 + bassEnergy * 0.045 : 1;
+      if (pulse !== 1) {
+        ctx.drawImage(bgImageCache.canvas, (width - width * pulse) / 2, (height - height * pulse) / 2, width * pulse, height * pulse);
+      } else {
+        ctx.drawImage(bgImageCache.canvas, 0, 0);
+      }
+      const dim = state.visualizer.bgImageDim ?? 0.35;
+      if (dim > 0) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${dim})`;
         ctx.fillRect(0, 0, width, height);
+      }
+      return true;
+    }
+
+    function drawBackground(ctx, width, height, palette, bassEnergy) {
+      // With a background image, the chosen style is layered on top of it instead of a solid fill
+      const hasImage = drawBackgroundImage(ctx, width, height, palette, bassEnergy);
+
+      if (state.visualizer.bgStyle === 'solid') {
+        if (!hasImage) {
+          ctx.fillStyle = '#020617';
+          ctx.fillRect(0, 0, width, height);
+        }
         return;
       }
 
       if (state.visualizer.bgStyle === 'gradient') {
         const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, Math.max(width, height) * 0.7);
-        bgGrad.addColorStop(0, palette.bgGradient[1]);
-        bgGrad.addColorStop(1, palette.bgGradient[0]);
+        if (hasImage) {
+          // Vignette: clear centre, palette-tinted edges
+          bgGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          bgGrad.addColorStop(1, `${palette.bgGradient[0]}e6`);
+        } else {
+          bgGrad.addColorStop(0, palette.bgGradient[1]);
+          bgGrad.addColorStop(1, palette.bgGradient[0]);
+        }
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, width, height);
         return;
       }
 
       if (state.visualizer.bgStyle === 'grid') {
-        ctx.fillStyle = '#030712';
-        ctx.fillRect(0, 0, width, height);
+        if (!hasImage) {
+          ctx.fillStyle = '#030712';
+          ctx.fillRect(0, 0, width, height);
+        }
         // Perspective Grid Lines
         ctx.strokeStyle = `${palette.primary}20`;
         ctx.lineWidth = 1.5;
@@ -2991,8 +3382,10 @@
       }
 
       // Default: Dynamic Starfield
-      ctx.fillStyle = '#020617';
-      ctx.fillRect(0, 0, width, height);
+      if (!hasImage) {
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(0, 0, width, height);
+      }
 
       // Warp speed on bass kicks
       const speed = 2 + bassEnergy * 15;
@@ -3703,20 +4096,68 @@
     function drawFloatingParticles(ctx, width, height, palette, bassEnergy, midEnergy) {
       const count = state.visualizer.particleDensity || 45;
       const style = state.visualizer.particleStyle || 'orbs';
-      const speedMult = 1 + bassEnergy * 3.5;
+      const speedMult = (state.visualizer.particleSpeed ?? 1) * (1 + bassEnergy * 3.5);
+      const motion = state.visualizer.particleMotion || 'drift';
+      const unit = Math.min(width, height);
+      // Radial & swirl motions centre on the visualizer layer (follows the Layout editor)
+      const vRectP = layerPixelRect('visualizer', width, height);
+      const cxN = (vRectP.x + vRectP.w / 2) / width;
+      const cyN = (vRectP.y + vRectP.h / 2) / height;
+      const ang = ((state.visualizer.particleDirection || 0) * Math.PI) / 180;
+      const cosA = Math.cos(ang), sinA = Math.sin(ang);
+      const now = Date.now();
 
       ctx.save();
       for (let i = 0; i < count && i < ambientParticles.length; i++) {
         const p = ambientParticles[i];
-        p.x += p.vx * speedMult + Math.sin(Date.now() * 0.001 + p.phase) * 0.0005;
-        p.y += p.vy * speedMult;
+        const wobble = Math.sin(now * 0.001 + p.phase) * 0.0005;
 
-        if (p.y < -0.05) {
-          p.y = 1.05;
-          p.x = Math.random();
+        if (motion === 'drift') {
+          // Rotate each particle's own (mostly upward) velocity, so 0deg reproduces the original drift
+          p.x += (p.vx * cosA - p.vy * sinA) * speedMult + wobble;
+          p.y += (p.vx * sinA + p.vy * cosA) * speedMult;
+          if (p.y < -0.05) { p.y = 1.05; p.x = Math.random(); }
+          else if (p.y > 1.05) { p.y = -0.05; p.x = Math.random(); }
+          if (p.x < -0.05) p.x = 1.05;
+          else if (p.x > 1.05) p.x = -0.05;
+        } else {
+          // Work in square units around the centre so circles stay round at any aspect ratio
+          let dx = ((p.x - cxN) * width) / unit;
+          let dy = ((p.y - cyN) * height) / unit;
+          const r = Math.hypot(dx, dy) || 1e-6;
+          const ux = dx / r, uy = dy / r;
+          const sp = Math.hypot(p.vx, p.vy) * speedMult;
+          if (motion === 'burst') { dx += ux * sp * (0.6 + r); dy += uy * sp * (0.6 + r); }
+          else if (motion === 'implode') { dx -= ux * sp * (0.6 + r); dy -= uy * sp * (0.6 + r); }
+          else {
+            const dir = motion === 'swirl-ccw' ? -1 : 1; // +1 = clockwise on screen
+            dx += -uy * sp * 1.4 * dir;
+            dy += ux * sp * 1.4 * dir;
+            if (motion === 'vortex') { dx -= ux * sp * 0.5; dy -= uy * sp * 0.5; }
+          }
+          dx += wobble;
+          p.x = cxN + (dx * unit) / width;
+          p.y = cyN + (dy * unit) / height;
+
+          const outside = p.x < -0.05 || p.x > 1.05 || p.y < -0.05 || p.y > 1.05;
+          const sucked = (motion === 'implode' || motion === 'vortex') && r < 0.03;
+          if (motion === 'burst' && outside) {
+            // Re-emerge near the centre
+            const a = Math.random() * Math.PI * 2, rr = Math.random() * 0.08;
+            p.x = cxN + (Math.cos(a) * rr * unit) / width;
+            p.y = cyN + (Math.sin(a) * rr * unit) / height;
+          } else if (sucked || (outside && motion !== 'burst')) {
+            if (motion === 'implode' || motion === 'vortex') {
+              // Re-enter from a random frame edge
+              const side = Math.floor(Math.random() * 4), t = Math.random();
+              p.x = side === 0 ? -0.02 : side === 1 ? 1.02 : t;
+              p.y = side === 2 ? -0.02 : side === 3 ? 1.02 : t;
+            } else {
+              p.x = Math.random();
+              p.y = Math.random();
+            }
+          }
         }
-        if (p.x < -0.05) p.x = 1.05;
-        if (p.x > 1.05) p.x = -0.05;
 
         const px = p.x * width;
         const py = p.y * height;
@@ -4977,6 +5418,8 @@
     const PERSISTED_CONTROL_IDS = [
       'selectColorTheme', 'selectBgStyle', 'sliderReactivity', 'sliderGlow', 'sliderSmoothing', 'sliderVizOpacity',
       'checkFloatingParticles', 'selectParticleStyle', 'sliderParticleDensity',
+      'selectParticleMotion', 'sliderParticleDirection', 'sliderParticleSpeed',
+      'selectBgImageFit', 'sliderBgImageDim', 'sliderBgImageBlur', 'checkBgImagePulse',
       'checkTurntable', 'sliderTurntableSpeed', 'sliderTurntableSize',
       'selectLyricLayout', 'selectLyricFont', 'sliderLyricSize', 'sliderLyricPos',
       'colorLyricFont', 'colorLyricHighlight', 'colorLyricSecondary', 'checkBassBounce', 'checkBackdropPill',
@@ -5087,10 +5530,11 @@
     btnClearTurntableImg.addEventListener('click', () => saveCoverArt(null));
 
     document.getElementById('btnResetSettings').addEventListener('click', () => {
-      if (!confirm('Reset all visualizer, lyric, layout and export settings to their defaults?')) return;
+      if (!confirm('Reset all visualizer, lyric, layout and export settings to their defaults? (Your saved palettes are kept.)')) return;
       try {
         localStorage.removeItem(SETTINGS_KEY);
         localStorage.removeItem(COVER_ART_KEY);
+        localStorage.removeItem(BG_IMAGE_KEY);
       } catch (e) {}
       settingsRestoring = true; // don't re-save the current values while reloading
       location.reload();

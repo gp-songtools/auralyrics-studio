@@ -15,9 +15,11 @@ A single-file, zero-backend browser web application for uploading music creation
 - **13 Reactive Visualizer Modes**: Radial Spectrum, Cyber Skyline Equalizer, Neon Oscilloscope Waveform, Cosmic Vortex, Aurora Ribbons, Dual Infinity, Pulse Rings (bass-reactive core with beat shockwaves), Mirror Bars, Inferno Spectrum, Spiral Burst, an analog VU Meter, LED Meter, and Dot Spectrum, plus a Visualizer Opacity slider.
 - **Drag-and-Resize Layout Editor**: The app opens in layout-editing mode so you can move and resize the Visualizer, Turntable, and Lyrics layers directly on the canvas (click **Preview** or press `L` for a clean view), with edge/centre snapping, Shift to keep proportions, arrow-key nudging, and per-layer reset. Layouts are stored as fractions of the frame, so they carry across resolutions and aspect ratios, and the editor overlay is never recorded into exports.
 - **Saved Settings**: Visualizer, lyric, layout, export and volume settings (and custom turntable cover art) are saved in your browser and restored on reload; **Reset settings** restores the defaults.
+- **Custom Palettes**: A palette editor (primary, secondary, accent and background colors) with live preview; save palettes by name under **My Palettes**, update or delete them later.
+- **Background Images**: Upload an image behind the visualizer with Cover/Contain/Stretch fit, dim, blur and bass-pulse options; the Background Style (starfield, grid or vignette) is layered on top.
 - **Layered Visual Overlays**:
   - **Rotating Vinyl Turntable**: Spinning vinyl platter with concentric grooves, specular sheen, and circular-clipped custom cover art upload.
-  - **Floating Particles Overlay**: Bass-reactive Bokeh Orbs, Neon Embers, Musical Notes, and Diamond Stardust.
+  - **Floating Particles Overlay**: Bass-reactive Bokeh Orbs, Neon Embers, Musical Notes, and Diamond Stardust, with Drift (any direction), Radial Burst, Implode, Swirl and Vortex motion plus a speed control.
 - **Lyric Typography & Color Studio**: 4 display layouts (Kinetic Spotlight, Lower-Third Subtitle, Rolling Teleprompter, Karaoke Wipe), 5 Google Fonts, and custom pickers/presets for active font color, glow color, and upcoming/past line color.
 - **Direct Video Export (`.mp4` / `.webm`)**: Records the HTML5 `<canvas>` stream (`captureStream`) merged with the Web Audio `MediaStreamDestination` at 1080p (16:9), 720p (16:9), Square (1:1), or Vertical (9:16) at 30 or 60 FPS.
 
