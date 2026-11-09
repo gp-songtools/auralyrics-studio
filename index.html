@@ -1010,6 +1010,12 @@
     </div>
   </main>
 
+  <footer class="shrink-0 px-4 lg:px-6 py-2 text-[11px] text-slate-500 border-t border-slate-800/60 flex flex-wrap gap-x-3 gap-y-1">
+    <a href="changelog.html" class="hover:text-slate-300 underline">Changelog</a>
+    <a href="https://gp-songtools.github.io/toolsmenu/privacy.html" class="hover:text-slate-300 underline">Privacy &amp; credits</a>
+    <a href="https://gp-songtools.github.io/toolsmenu/" class="hover:text-slate-300 underline">More GP Song Tools</a>
+  </footer>
+
   <!-- In-Page Video Export Complete Modal -->
   <div id="modalExportComplete" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="glass-panel max-w-lg w-full rounded-2xl p-6 shadow-2xl border border-pink-500/30 text-center animate-fade-in">
@@ -1213,7 +1219,11 @@
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">API Key</label>
           <input type="password" id="inputWhisperKey" placeholder="gsk_... or sk-..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono" />
-          <p class="text-[10px] text-slate-500 mt-1">Key is saved only in this browser's localStorage and sent only to the provider you pick.</p>
+          <label class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-300 cursor-pointer select-none">
+            <input type="checkbox" id="chkRememberWhisperKey" class="accent-purple-500" />
+            Remember key on this device
+          </label>
+          <p class="text-[10px] text-slate-500 mt-1">The key is sent only to the provider you pick. Unless you tick Remember, it is forgotten when you close the tab. A remembered key is saved unencrypted in this browser, so don't tick it on a shared computer.</p>
         </div>
 
         <div id="aiWhisperStatusBox" class="hidden p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
@@ -4702,11 +4712,21 @@
     const btnToggleLiveSpeech = document.getElementById('btnToggleLiveSpeech');
     const labelLiveSpeechBtn = document.getElementById('labelLiveSpeechBtn');
 
-    // Retrieve saved key
+    // Retrieve saved key. A key is only saved when "Remember key on this device" is ticked;
+    // a key saved by older versions (which always saved it) shows the box ticked.
+    const chkRememberWhisperKey = document.getElementById('chkRememberWhisperKey');
     try {
       const savedKey = localStorage.getItem('aura_whisper_key');
-      if (savedKey) inputWhisperKey.value = savedKey;
+      if (savedKey) { inputWhisperKey.value = savedKey; chkRememberWhisperKey.checked = true; }
     } catch (e) {}
+    const syncSavedWhisperKey = () => {
+      try {
+        const k = inputWhisperKey.value.trim();
+        if (chkRememberWhisperKey.checked && k) localStorage.setItem('aura_whisper_key', k);
+        else localStorage.removeItem('aura_whisper_key');
+      } catch (e) {}
+    };
+    chkRememberWhisperKey.addEventListener('change', syncSavedWhisperKey);
 
     const tabAiLocal = document.getElementById('tabAiLocal');
     const panelAiLocal = document.getElementById('panelAiLocal');
@@ -5228,9 +5248,7 @@
         return;
       }
 
-      try {
-        localStorage.setItem('aura_whisper_key', apiKey);
-      } catch (e) {}
+      syncSavedWhisperKey();
 
       const provider = selectWhisperProvider.value;
       const providerLabel = provider === 'groq' ? 'Groq' : 'OpenAI';
@@ -5552,5 +5570,6 @@
       btnLoadSampleLyrics.click();
     });
   </script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2c5b0c69f74b496998f02d0e1f651bd5"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
