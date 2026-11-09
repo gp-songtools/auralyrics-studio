@@ -70,9 +70,10 @@
         padding-top: 16px;
         background: #0d1424;
       }
-      /* Cap the preview height so the settings pane keeps usable room on shorter screens */
+      /* Preview fills the panel width; only on short screens is it capped so the
+         settings pane below keeps ~120px of usable room */
       #canvasViewportWrapper {
-        max-width: calc(max(220px, min(50vh, 100vh - 540px)) * 16 / 9);
+        max-width: calc(max(220px, 100vh - 480px) * 16 / 9);
         margin-left: auto;
         margin-right: auto;
       }
