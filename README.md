@@ -6,9 +6,10 @@ A single-file, zero-backend browser web application for uploading music creation
 
 - **Multi-Format Audio Engine**: Upload `.wav`, `.m4a`, or `.mp3` files via drag-and-drop, or generate a built-in 20-second synthesized synthwave demo track offline via `OfflineAudioContext`.
 - **AI Speech Recognition & Lyric Syncing**:
-  - **In-Browser Whisper AI**: Uses `@xenova/transformers` (`Xenova/whisper-tiny.en`) in WebAssembly to transcribe vocals directly from the audio buffer with zero API keys.
+  - **In-Browser Whisper AI**: Uses `@xenova/transformers` in WebAssembly with a selectable model (`whisper-tiny.en`, `base.en`, or `small.en`) to transcribe vocals directly from the audio buffer with zero API keys.
   - **Vocal Band Phrase Scanner**: Filters the 300 Hz – 3.4 kHz vocal frequency band to detect vocal phrase onsets and distribute lyrics across the full song duration.
-  - **Cloud Whisper API**: Optional Bring-Your-Own-Key support for Groq (`whisper-large-v3`) and OpenAI (`whisper-1`) with verbose timestamp segments.
+  - **Cloud Whisper API**: Optional Bring-Your-Own-Key support for Groq (`whisper-large-v3`) and OpenAI (`whisper-1`). Audio is compressed to 16 kHz mono WAV before upload (songs up to ~13 min fit the 25 MB limit) and word-level timestamps are requested.
+  - **Align to Your Lyrics**: Both Whisper modes can keep the lyric lines you pasted into the editor and use the transcription only for timing (fuzzy word alignment, with unmatched lines interpolated).
   - **Live Browser Listener**: Real-time Web Speech API listener.
   - **Tap-to-Sync Assistant**: Stamp lyric lines on the beat using the `S` or `T` key (leaving `Spacebar` dedicated to Play/Pause), plus full-song stretching and `-1s` / `+1s` offset buttons.
 - **6 Reactive Visualizer Modes**: Radial Spectrum, Cyber Skyline Equalizer, Neon Oscilloscope Waveform, Cosmic Vortex, Aurora Ribbons, and Dual Infinity.

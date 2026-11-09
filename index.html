@@ -880,11 +880,31 @@
         </button>
       </div>
 
+      <!-- Align-to-Editor option (applies to both Whisper modes) -->
+      <label id="aiAlignBox" class="mt-3 flex items-start space-x-2 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-300 cursor-pointer">
+        <input type="checkbox" id="chkAiAlignToEditor" class="mt-0.5 accent-pink-500" />
+        <span>
+          <strong class="text-slate-100">Align to my lyrics in the editor</strong>
+          <span id="aiAlignStatus" class="text-slate-500">(no lyrics found)</span><br>
+          <span class="text-slate-500">Keeps your exact lyric lines and uses Whisper only for timing. Unchecked: uses Whisper's own words, split into short lines.</span>
+        </span>
+      </label>
+
       <!-- Tab 0: In-Browser Local Whisper (Transformers.js) & Vocal Scanner -->
       <div id="panelAiLocal" class="mt-4 space-y-3">
         <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-200">
           <p class="font-medium">Direct Audio File Analysis (Zero Keys / Zero Mic Needed)</p>
-          <p class="text-[11px] text-slate-300 mt-1">Reads the raw audio samples directly from <strong id="aiLocalAudioName" class="text-pink-400">your track</strong> using WebAssembly Whisper AI (`Xenova/whisper-tiny.en`) or our 300Hz–3.4kHz Vocal Frequency Band Scanner to generate `.lrc` timestamps directly!</p>
+          <p class="text-[11px] text-slate-300 mt-1">Reads the raw audio samples directly from <strong id="aiLocalAudioName" class="text-pink-400">your track</strong> using WebAssembly Whisper AI or our 300Hz–3.4kHz Vocal Frequency Band Scanner to generate `.lrc` timestamps directly!</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">In-Browser Whisper Model</label>
+          <select id="selectLocalWhisperModel" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option value="Xenova/whisper-tiny.en" selected>Tiny (~40 MB download, fastest, least accurate)</option>
+            <option value="Xenova/whisper-base.en">Base (~75 MB download, balanced)</option>
+            <option value="Xenova/whisper-small.en">Small (~250 MB download, most accurate, slow)</option>
+          </select>
+          <p class="text-[10px] text-slate-500 mt-1">Downloaded once, then cached by your browser. Larger models can take several minutes on a full song.</p>
         </div>
 
         <div id="localAiProgressBox" class="hidden p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
@@ -918,7 +938,7 @@
       <div id="panelAiWhisper" class="mt-4 space-y-3 hidden">
         <div class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-200">
           <p class="font-medium">Direct AI Audio Transcription</p>
-          <p class="text-[11px] text-slate-300 mt-1">Sends your uploaded track (<strong id="aiModalAudioName" class="text-pink-400">No Track</strong>) to the Whisper endpoint with verbose segment timestamps. Supports <strong>Groq Whisper</strong> (free &amp; takes ~2 seconds) or <strong>OpenAI</strong>.</p>
+          <p class="text-[11px] text-slate-300 mt-1">Converts your track (<strong id="aiModalAudioName" class="text-pink-400">No Track</strong>) to a compact 16 kHz mono WAV (~1.9 MB per minute, so songs up to ~13 min fit the 25 MB upload limit) and sends it to Whisper with word-level timestamps. Supports <strong>Groq Whisper</strong> (free &amp; takes ~2 seconds) or <strong>OpenAI</strong>.</p>
         </div>
 
         <div>
@@ -932,7 +952,7 @@
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">API Key</label>
           <input type="password" id="inputWhisperKey" placeholder="gsk_... or sk-..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono" />
-          <p class="text-[10px] text-slate-500 mt-1">Key stays safely in your local browser memory / session.</p>
+          <p class="text-[10px] text-slate-500 mt-1">Key is saved only in this browser's localStorage and sent only to the provider you pick.</p>
         </div>
 
         <div id="aiWhisperStatusBox" class="hidden p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
@@ -3312,6 +3332,31 @@
       [panelAiLocal, panelAiWhisper, panelAiLiveListen].forEach(p => p.classList.add('hidden'));
       activeTab.className = `flex-1 py-1.5 rounded-lg ${activeColorClass} transition`;
       activePanel.classList.remove('hidden');
+      // The align-to-editor option only applies to the two Whisper modes
+      aiAlignBox.classList.toggle('hidden', activePanel === panelAiLiveListen);
+    }
+
+    const aiAlignBox = document.getElementById('aiAlignBox');
+    const chkAiAlignToEditor = document.getElementById('chkAiAlignToEditor');
+    const aiAlignStatus = document.getElementById('aiAlignStatus');
+    const selectLocalWhisperModel = document.getElementById('selectLocalWhisperModel');
+
+    try {
+      const savedModel = localStorage.getItem('aura_local_whisper_model');
+      if (savedModel && [...selectLocalWhisperModel.options].some(o => o.value === savedModel)) {
+        selectLocalWhisperModel.value = savedModel;
+      }
+    } catch (e) {}
+    selectLocalWhisperModel.addEventListener('change', () => {
+      try { localStorage.setItem('aura_local_whisper_model', selectLocalWhisperModel.value); } catch (e) {}
+    });
+
+    function refreshAiAlignStatus() {
+      const count = getEditorLyricLines().lines.length;
+      aiAlignStatus.textContent = count ? `(${count} lines found)` : '(no lyrics found)';
+      chkAiAlignToEditor.disabled = count === 0;
+      // Default to aligning whenever the editor already holds lyrics
+      chkAiAlignToEditor.checked = count > 0;
     }
 
     tabAiLocal.addEventListener('click', () => switchAiModalTab(tabAiLocal, panelAiLocal, 'bg-emerald-500/20 text-emerald-300'));
@@ -3322,6 +3367,7 @@
       const name = state.audio.fileName || 'No Track Loaded';
       aiModalAudioName.textContent = name;
       aiLocalAudioName.textContent = name;
+      refreshAiAlignStatus();
       modalAiTranscribe.classList.remove('hidden');
       modalAiTranscribe.classList.add('flex');
     });
@@ -3439,31 +3485,300 @@
     btnRunVocalBandScan.addEventListener('click', runVocalBandPhraseScanner);
 
     // In-Browser WebAssembly Whisper AI (Transformers.js)
+    // --- Shared Transcription Helpers (used by In-Browser and Cloud Whisper) ---
+    const WHISPER_UPLOAD_LIMIT_BYTES = 25 * 1000 * 1000; // Groq free tier & OpenAI upload cap
+    const whisperPipelineCache = {}; // modelId -> Promise<pipeline>
+
+    function formatLrcTime(sec) {
+      const t = Math.max(0, sec || 0);
+      const m = Math.floor(t / 60);
+      const cs = Math.round((t - m * 60) * 100); // hundredths
+      const s = Math.floor(cs / 100);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs % 100).padStart(2, '0')}`;
+    }
+
+    async function getTrackArrayBuffer() {
+      if (state.audio.rawBlobOrFile) return state.audio.rawBlobOrFile.arrayBuffer();
+      if (audioPlayer.src) return (await fetch(audioPlayer.src)).arrayBuffer();
+      throw new Error('No audio file found');
+    }
+
+    // Decodes the loaded track and resamples it to 16 kHz mono (Whisper's native input format)
+    async function decodeTrackTo16kMono() {
+      initWebAudio();
+      const arrayBuffer = await getTrackArrayBuffer();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+      const targetSampleRate = 16000;
+      const offlineCtx = new OfflineAudioContext(1, Math.max(1, Math.ceil(audioBuffer.duration * targetSampleRate)), targetSampleRate);
+      const source = offlineCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(offlineCtx.destination); // stereo is down-mixed to mono automatically
+      source.start(0);
+      return offlineCtx.startRendering();
+    }
+
+    // Reads the editor's lyric lines in written order, ignoring timestamps and LRC metadata tags
+    function getEditorLyricLines() {
+      const lines = [];
+      const metadata = [];
+      for (const raw of lrcTextInput.value.split('\n')) {
+        const trimmed = raw.trim();
+        if (!trimmed) continue;
+        if (/^\[[a-z#]+:[^\]]*\]$/i.test(trimmed) && !/^\[\d/.test(trimmed)) {
+          metadata.push(trimmed);
+          continue;
+        }
+        const text = trimmed.replace(/^(\[\d{1,2}:\d{2}(?:[.:]\d{1,3})?\]\s*)+/, '').trim();
+        if (text) lines.push(text);
+      }
+      return { lines, metadata };
+    }
+
+    function normalizeLyricToken(w) {
+      return (w || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+    }
+
+    // Spreads each segment's words evenly over the segment when real word timings are unavailable
+    function segmentsToWords(segments) {
+      const words = [];
+      for (const seg of segments) {
+        const toks = (seg.text || '').trim().split(/\s+/).filter(Boolean);
+        if (!toks.length) continue;
+        const s = seg.start || 0;
+        const e = Math.max(seg.end || 0, s + 0.2 * toks.length);
+        const step = (e - s) / toks.length;
+        toks.forEach((w, i) => words.push({ word: w, start: s + i * step, end: s + (i + 1) * step, segBreak: i === 0 }));
+      }
+      return words;
+    }
+
+    // Marks which API words begin a new Whisper segment (a natural phrase boundary)
+    function markSegmentBreaks(words, segments) {
+      const starts = (segments || []).map(s => s.start).filter(t => typeof t === 'number').sort((a, b) => a - b);
+      let p = 0;
+      for (const w of words) {
+        w.segBreak = false;
+        while (p < starts.length && starts[p] <= w.start + 0.01) {
+          w.segBreak = true;
+          p++;
+        }
+      }
+      return words;
+    }
+
+    // Groups transcribed words into short, readable lyric lines
+    function buildLinesFromWords(words) {
+      const MAX_WORDS = 8, MAX_CHARS = 42, GAP_SEC = 0.6;
+      const lines = [];
+      let cur = null;
+      let prev = null;
+      for (const w of words) {
+        const text = (w.word || '').trim();
+        if (!text) continue;
+        const shouldBreak = !cur
+          || w.segBreak
+          || (w.start - prev.end) > GAP_SEC
+          || /[.!?;]["')\]]?$/.test(prev.text)
+          || (/,$/.test(prev.text) && cur.words.length >= 4)
+          || cur.words.length >= MAX_WORDS
+          || cur.chars + 1 + text.length > MAX_CHARS;
+        if (shouldBreak) {
+          cur = { time: w.start, words: [], chars: 0 };
+          lines.push(cur);
+        }
+        cur.chars += text.length + (cur.words.length ? 1 : 0);
+        cur.words.push(text);
+        prev = { text, end: w.end };
+      }
+      return lines.map(l => ({ time: l.time, text: l.words.join(' ') }));
+    }
+
+    function editDistance(a, b) {
+      const dp = Array.from({ length: b.length + 1 }, (_, j) => j);
+      for (let i = 1; i <= a.length; i++) {
+        let prevDiag = dp[0];
+        dp[0] = i;
+        for (let j = 1; j <= b.length; j++) {
+          const tmp = dp[j];
+          dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prevDiag + (a[i - 1] === b[j - 1] ? 0 : 1));
+          prevDiag = tmp;
+        }
+      }
+      return dp[b.length];
+    }
+
+    // 2 = exact, 1 = close (misheard / inflected), 0 = different
+    function tokenSimilarity(a, b) {
+      if (a === b) return 2;
+      if (Math.abs(a.length - b.length) > 2 || Math.min(a.length, b.length) < 3) return 0;
+      if (a.startsWith(b) || b.startsWith(a)) return 1;
+      return (1 - editDistance(a, b) / Math.max(a.length, b.length)) >= 0.75 ? 1 : 0;
+    }
+
+    // Aligns the user's lyric lines to Whisper's timed words (global sequence alignment),
+    // timing each line from its first matched word and interpolating unmatched lines.
+    function alignLyricsToWords(lyricLines, words, duration) {
+      const lyricToks = [];
+      const lineTokRanges = lyricLines.map(text => {
+        const start = lyricToks.length;
+        for (const w of text.split(/\s+/)) {
+          const n = normalizeLyricToken(w);
+          if (n) lyricToks.push(n);
+        }
+        return [start, lyricToks.length];
+      });
+      const wordToks = [];
+      const wordTimes = [];
+      for (const w of words) {
+        const n = normalizeLyricToken(w.word);
+        if (n) { wordToks.push(n); wordTimes.push(w.start); }
+      }
+      const n = lyricToks.length, m = wordToks.length;
+      if (!n || !m) return null;
+
+      // Needleman-Wunsch: match +2 / close +1 / mismatch -1 / gap -1
+      const W = m + 1;
+      const score = new Int32Array((n + 1) * W);
+      const dir = new Uint8Array((n + 1) * W); // 1 = diag, 2 = up (skip lyric token), 3 = left (skip heard word)
+      for (let i = 1; i <= n; i++) { score[i * W] = -i; dir[i * W] = 2; }
+      for (let j = 1; j <= m; j++) { score[j] = -j; dir[j] = 3; }
+      for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+          const sim = tokenSimilarity(lyricToks[i - 1], wordToks[j - 1]);
+          const diag = score[(i - 1) * W + j - 1] + (sim === 2 ? 2 : sim === 1 ? 1 : -1);
+          const up = score[(i - 1) * W + j] - 1;
+          const left = score[i * W + j - 1] - 1;
+          let best = diag, d = 1;
+          if (up > best) { best = up; d = 2; }
+          if (left > best) { best = left; d = 3; }
+          score[i * W + j] = best;
+          dir[i * W + j] = d;
+        }
+      }
+      const tokTime = new Array(n).fill(null);
+      let i = n, j = m;
+      while (i > 0 && j > 0) {
+        const d = dir[i * W + j];
+        if (d === 1) {
+          if (tokenSimilarity(lyricToks[i - 1], wordToks[j - 1]) > 0) tokTime[i - 1] = wordTimes[j - 1];
+          i--; j--;
+        } else if (d === 2) i--;
+        else j--;
+      }
+
+      // Anchor each line on its earliest matched word, backing off ~0.3 s per word sung before it
+      const SEC_PER_WORD = 0.3;
+      const times = lineTokRanges.map(([s, e]) => {
+        for (let k = s; k < e; k++) {
+          if (tokTime[k] !== null) return Math.max(0, tokTime[k] - (k - s) * SEC_PER_WORD);
+        }
+        return null;
+      });
+      const anchored = times.filter(t => t !== null).length;
+      if (!anchored) return null;
+
+      // Interpolate unmatched lines by word count between their neighbouring anchors
+      const weights = lineTokRanges.map(([s, e]) => Math.max(1, e - s));
+      const anchorIdx = times.map((t, k) => (t !== null ? k : -1)).filter(k => k >= 0);
+      const total = duration || Math.max(...wordTimes) + 2;
+      for (let a = 0; a < anchorIdx.length - 1; a++) {
+        const lo = anchorIdx[a], hi = anchorIdx[a + 1];
+        if (hi - lo < 2) continue;
+        let span = 0;
+        for (let k = lo; k < hi; k++) span += weights[k];
+        let acc = 0;
+        for (let k = lo + 1; k < hi; k++) {
+          acc += weights[k - 1];
+          times[k] = times[lo] + (times[hi] - times[lo]) * (acc / span);
+        }
+      }
+      const first = anchorIdx[0];
+      for (let k = first - 1; k >= 0; k--) times[k] = times[k + 1] - weights[k] * 0.35;
+      if (first > 0 && times[0] < 0) {
+        for (let k = 0; k < first; k++) times[k] = times[first] * (k / first);
+      }
+      const last = anchorIdx[anchorIdx.length - 1];
+      for (let k = last + 1; k < times.length; k++) times[k] = times[k - 1] + weights[k - 1] * 0.35;
+      const tail = times.length - 1 - last;
+      if (tail > 0 && times[times.length - 1] > total - 0.5) {
+        const room = Math.max(0.5, total - 0.5 - times[last]);
+        for (let k = last + 1; k < times.length; k++) times[k] = times[last] + room * ((k - last) / tail);
+      }
+
+      // Keep lines strictly in order
+      for (let k = 1; k < times.length; k++) {
+        if (times[k] < times[k - 1] + 0.05) times[k] = times[k - 1] + 0.05;
+      }
+      return {
+        lines: lyricLines.map((text, k) => ({ time: times[k], text })),
+        anchored,
+        total: lyricLines.length
+      };
+    }
+
+    // Writes Whisper output into the LRC editor, aligning to the user's lyrics when requested
+    function applyTranscribedWords(words, duration, sourceLabel) {
+      if (!words.length) return false;
+      const editor = getEditorLyricLines();
+      let lines = null;
+      let message = '';
+      if (chkAiAlignToEditor.checked && editor.lines.length) {
+        const aligned = alignLyricsToWords(editor.lines, words, duration);
+        if (aligned) {
+          lines = aligned.lines;
+          message = `Aligned your ${aligned.total} lyric lines to ${sourceLabel} timing (${aligned.anchored} matched directly, rest interpolated)`;
+        } else {
+          showToast("Couldn't match your lyrics to the vocals; using the transcription instead", 'info');
+        }
+      }
+      if (!lines) {
+        lines = buildLinesFromWords(words);
+        if (!lines.length) return false;
+        message = `Transcribed ${lines.length} synchronized lyric lines with ${sourceLabel}!`;
+      }
+      const body = lines.map(l => `[${formatLrcTime(l.time)}] ${l.text}`);
+      lrcTextInput.value = [...editor.metadata, ...body].join('\n');
+      parseLrcLyrics();
+      showToast(message, 'success');
+      modalAiTranscribe.classList.add('hidden');
+      modalAiTranscribe.classList.remove('flex');
+      return true;
+    }
+
+    function getWhisperPipeline(modelId, onProgress) {
+      if (!whisperPipelineCache[modelId]) {
+        whisperPipelineCache[modelId] = (async () => {
+          // Dynamically load Transformers.js from jsdelivr
+          const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+          return pipeline('automatic-speech-recognition', modelId, { progress_callback: (p) => onProgress && onProgress(p) });
+        })();
+        whisperPipelineCache[modelId].catch(() => { delete whisperPipelineCache[modelId]; });
+      }
+      return whisperPipelineCache[modelId];
+    }
+
     async function runInBrowserWhisperAI() {
       if (!state.audio.isLoaded) {
         showToast('Please upload or load an audio track first', 'error');
         return;
       }
 
+      const modelId = selectLocalWhisperModel.value || 'Xenova/whisper-tiny.en';
       localAiProgressBox.classList.remove('hidden');
-      localAiStatusLabel.textContent = 'Loading In-Browser Whisper AI (Xenova/whisper-tiny.en)...';
+      localAiStatusLabel.textContent = `Loading In-Browser Whisper AI (${modelId})...`;
       localAiPercent.textContent = '10%';
       localAiBar.style.width = '10%';
       btnRunLocalWhisper.disabled = true;
+      selectLocalWhisperModel.disabled = true;
 
       try {
         initWebAudio();
-        // Dynamically load Transformers.js from jsdelivr
-        const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-
-        const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en', {
-          progress_callback: (prog) => {
-            if (prog.status === 'progress' && prog.progress) {
-              const p = Math.round(prog.progress);
-              localAiStatusLabel.textContent = `Downloading AI weights (${prog.file || 'model'})...`;
-              localAiPercent.textContent = `${p}%`;
-              localAiBar.style.width = `${p}%`;
-            }
+        const transcriber = await getWhisperPipeline(modelId, (prog) => {
+          if (prog.status === 'progress' && prog.progress) {
+            const p = Math.round(prog.progress);
+            localAiStatusLabel.textContent = `Downloading AI weights (${prog.file || 'model'})...`;
+            localAiPercent.textContent = `${p}%`;
+            localAiBar.style.width = `${p}%`;
           }
         });
 
@@ -3471,23 +3786,7 @@
         localAiPercent.textContent = '75%';
         localAiBar.style.width = '75%';
 
-        let arrayBuffer = null;
-        if (state.audio.rawBlobOrFile) {
-          arrayBuffer = await state.audio.rawBlobOrFile.arrayBuffer();
-        } else if (audioPlayer.src) {
-          const resp = await fetch(audioPlayer.src);
-          arrayBuffer = await resp.arrayBuffer();
-        }
-
-        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-        const targetSampleRate = 16000;
-        const offlineCtx = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * targetSampleRate), targetSampleRate);
-        const source = offlineCtx.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(offlineCtx.destination);
-        source.start(0);
-
-        const resampledBuffer = await offlineCtx.startRendering();
+        const resampledBuffer = await decodeTrackTo16kMono();
         const float32Audio = resampledBuffer.getChannelData(0);
 
         localAiStatusLabel.textContent = 'Transcribing song vocals & generating timestamps...';
@@ -3500,25 +3799,16 @@
           return_timestamps: true
         });
 
-        if (output && output.chunks && output.chunks.length > 0) {
-          const lines = output.chunks
-            .filter(c => c.text && c.text.trim())
-            .map(c => {
-              const startSec = Array.isArray(c.timestamp) ? (c.timestamp[0] || 0) : 0;
-              return `[${formatTimeWithMs(startSec)}] ${c.text.trim()}`;
-            });
+        const segments = ((output && output.chunks) || [])
+          .filter(c => c.text && c.text.trim())
+          .map(c => {
+            const ts = Array.isArray(c.timestamp) ? c.timestamp : [0, null];
+            return { text: c.text, start: ts[0] || 0, end: ts[1] != null ? ts[1] : (ts[0] || 0) + 3 };
+          });
+        const words = segmentsToWords(segments);
 
-          if (lines.length > 0) {
-            lrcTextInput.value = lines.join('\n');
-            parseLrcLyrics();
-            showToast(`Transcribed ${lines.length} lyric segments directly in browser!`, 'success');
-            modalAiTranscribe.classList.add('hidden');
-            modalAiTranscribe.classList.remove('flex');
-          } else {
-            showToast('No distinct English lyrics detected in audio; falling back to Vocal Band Scanner...', 'info');
-            await runVocalBandPhraseScanner();
-          }
-        } else {
+        if (!applyTranscribedWords(words, resampledBuffer.duration, 'in-browser Whisper')) {
+          showToast('No distinct English lyrics detected in audio; falling back to Vocal Band Scanner...', 'info');
           await runVocalBandPhraseScanner();
         }
       } catch (err) {
@@ -3527,6 +3817,7 @@
         await runVocalBandPhraseScanner();
       } finally {
         btnRunLocalWhisper.disabled = false;
+        selectLocalWhisperModel.disabled = false;
         localAiProgressBox.classList.add('hidden');
       }
     }
@@ -3549,30 +3840,48 @@
       } catch (e) {}
 
       const provider = selectWhisperProvider.value;
+      const providerLabel = provider === 'groq' ? 'Groq' : 'OpenAI';
       const endpoint = provider === 'groq'
         ? 'https://api.groq.com/openai/v1/audio/transcriptions'
         : 'https://api.openai.com/v1/audio/transcriptions';
       const model = provider === 'groq' ? 'whisper-large-v3' : 'whisper-1';
 
       aiWhisperStatusBox.classList.remove('hidden');
-      aiWhisperStatusText.textContent = `Sending audio to ${provider === 'groq' ? 'Groq' : 'OpenAI'} Whisper...`;
+      aiWhisperStatusText.textContent = 'Compressing audio to 16 kHz mono WAV...';
       btnRunWhisperTranscribe.disabled = true;
 
       try {
-        let fileToSend = state.audio.rawBlobOrFile;
-        if (!fileToSend && audioPlayer.src) {
-          const resp = await fetch(audioPlayer.src);
-          fileToSend = await resp.blob();
+        let fileToSend = null;
+        let uploadName = 'track_16k_mono.wav';
+        let duration = state.audio.duration || 0;
+        try {
+          const resampled = await decodeTrackTo16kMono();
+          duration = resampled.duration;
+          fileToSend = bufferToWave(resampled, 0, resampled.length);
+        } catch (decodeErr) {
+          // Could not decode in this browser: fall back to uploading the original file
+          console.warn('16 kHz conversion failed, sending original file:', decodeErr);
+          fileToSend = state.audio.rawBlobOrFile;
+          if (!fileToSend && audioPlayer.src) fileToSend = await (await fetch(audioPlayer.src)).blob();
+          uploadName = state.audio.fileName || 'track.mp3';
         }
 
         if (!fileToSend) {
           throw new Error('No audio file found');
         }
+        if (fileToSend.size > WHISPER_UPLOAD_LIMIT_BYTES) {
+          const mb = (fileToSend.size / 1e6).toFixed(1);
+          throw new Error(`Audio is ${mb} MB after compression; the upload limit is 25 MB (about 13 minutes of audio). Trim the track and try again.`);
+        }
+
+        aiWhisperStatusText.textContent = `Sending ${(fileToSend.size / 1e6).toFixed(1)} MB to ${providerLabel} Whisper...`;
 
         const formData = new FormData();
-        formData.append('file', fileToSend, state.audio.fileName || 'track.mp3');
+        formData.append('file', fileToSend, uploadName);
         formData.append('model', model);
         formData.append('response_format', 'verbose_json');
+        formData.append('timestamp_granularities[]', 'word');
+        formData.append('timestamp_granularities[]', 'segment');
         formData.append('temperature', '0.0');
 
         const res = await fetch(endpoint, {
@@ -3589,21 +3898,14 @@
         }
 
         const data = await res.json();
-        if (!data.segments || !data.segments.length) {
-          throw new Error('No speech segments detected in track');
+        const segments = data.segments || [];
+        let words = Array.isArray(data.words) && data.words.length
+          ? markSegmentBreaks(data.words.map(w => ({ word: w.word, start: w.start, end: w.end })), segments)
+          : segmentsToWords(segments);
+
+        if (!applyTranscribedWords(words, duration, `${providerLabel} Whisper`)) {
+          throw new Error('No speech detected in track');
         }
-
-        const lrcLines = data.segments.map(seg => {
-          const timeStr = formatTimeWithMs(seg.start);
-          return `[${timeStr}] ${seg.text.trim()}`;
-        });
-
-        lrcTextInput.value = lrcLines.join('\n');
-        parseLrcLyrics();
-
-        showToast(`Success! Transcribed ${lrcLines.length} synchronized lyric lines!`, 'success');
-        modalAiTranscribe.classList.add('hidden');
-        modalAiTranscribe.classList.remove('flex');
 
       } catch (err) {
         console.error('Whisper API error:', err);
