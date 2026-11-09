@@ -59,10 +59,12 @@
       body { height: 100vh; overflow: hidden; }
       #appMain { min-height: 0; grid-template-rows: minmax(0, 1fr); }
       #setupColumn { min-height: 0; overflow-y: auto; padding-right: 4px; }
+      /* Keep the left tab bar visible while the active tab scrolls */
+      #leftTabBar { position: sticky; top: 0; z-index: 10; background: #0d1424; }
       #studioColumn { min-height: 0; overflow: hidden; }
       #previewPane { flex-shrink: 0; }
       #configPane { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: 0; }
-      /* Keep the Visualizer / Lyrics / Export tab bar pinned while settings scroll */
+      /* Keep the Video Export Studio header pinned while the export settings scroll */
       #configPane > :first-child {
         position: sticky;
         top: 0;
@@ -170,9 +172,27 @@
   <!-- Main Layout Grid -->
   <main id="appMain" class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
     
-    <!-- Left Column: Audio & Lyrics Setup (5 cols on lg) -->
+    <!-- Left Column: tabbed Audio / Lyrics, Visualizer and Lyric Typography (5 cols on lg) -->
     <div id="setupColumn" class="lg:col-span-5 flex flex-col space-y-4">
       
+      <!-- Left Pane Tabs: Audio / Lyrics, Visualizer, Lyric Style -->
+      <div id="leftTabBar" class="glass-panel rounded-2xl p-1.5 flex text-xs font-semibold shadow-xl">
+        <button id="tabLeftAudio" data-left-tab="audio" class="left-tab flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+          <span>Audio / Lyrics</span>
+        </button>
+        <button id="tabLeftVisuals" data-left-tab="visuals" class="left-tab flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+          <span>Visualizer</span>
+        </button>
+        <button id="tabLeftLyricStyle" data-left-tab="lyricstyle" class="left-tab flex-1 flex items-center justify-center space-x-1.5 py-2 rounded-xl transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+          <span>Lyrics</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: Audio upload & lyric editing -->
+      <div id="leftPanelAudio" data-left-panel="audio" class="flex-1 flex flex-col space-y-4">
       <!-- Audio Source Card -->
       <div class="glass-panel rounded-2xl p-4 shadow-xl">
         <div class="flex items-center justify-between mb-3">
@@ -340,9 +360,306 @@
           </div>
         </div>
       </div>
+      </div>
+
+      <!-- Tab 2: Visualizer Engine -->
+      <div id="leftPanelVisuals" data-left-panel="visuals" class="hidden glass-panel rounded-2xl p-4 shadow-xl">
+          <h2 class="text-sm font-semibold tracking-wide text-slate-200 uppercase flex items-center space-x-2 mb-4">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            </svg>
+            <span>Visualizer Engine</span>
+          </h2>
+        <div id="sectionVisuals" class="space-y-4">
+          <!-- Visualizer Mode Preset Selection -->
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-2">Visualizer Pattern</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button data-mode="radial" class="viz-mode-btn p-2 rounded-xl bg-pink-500/15 border-2 border-pink-500 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-pink-300">Radial Spectrum</span>
+                <span class="text-[10px] text-slate-400 mt-1">Circular neon bars &amp; pulsing center</span>
+              </button>
+              <button data-mode="equalizer" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Cyber Skyline</span>
+                <span class="text-[10px] text-slate-400 mt-1">Symmetrical bars with floor reflection</span>
+              </button>
+              <button data-mode="waveform" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Neon Oscilloscope</span>
+                <span class="text-[10px] text-slate-400 mt-1">Multi-layered glowing audio waves</span>
+              </button>
+              <button data-mode="nebula" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Cosmic Vortex</span>
+                <span class="text-[10px] text-slate-400 mt-1">Reactive 3D starfield &amp; bass ripple</span>
+              </button>
+              <button data-mode="aurora" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Aurora Ribbons</span>
+                <span class="text-[10px] text-slate-400 mt-1">Flowing liquid sine gradients</span>
+              </button>
+              <button data-mode="dualring" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Dual Infinity</span>
+                <span class="text-[10px] text-slate-400 mt-1">Twin intertwined orbiting spectrums</span>
+              </button>
+              <button data-mode="pulserings" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Pulse Rings</span>
+                <span class="text-[10px] text-slate-400 mt-1">Bass-thumping core, rings &amp; shockwaves</span>
+              </button>
+              <button data-mode="mirrorbars" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Mirror Bars</span>
+                <span class="text-[10px] text-slate-400 mt-1">Centre-out spectrum mirrored up &amp; down</span>
+              </button>
+              <button data-mode="inferno" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Inferno Spectrum</span>
+                <span class="text-[10px] text-slate-400 mt-1">Dense flame bars with falling peaks</span>
+              </button>
+              <button data-mode="spiralburst" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Spiral Burst</span>
+                <span class="text-[10px] text-slate-400 mt-1">Twin counter-rotating curved bar rings</span>
+              </button>
+              <button data-mode="vumeter" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">VU Meter</span>
+                <span class="text-[10px] text-slate-400 mt-1">Analog needle gauge with peak lamp</span>
+              </button>
+              <button data-mode="ledmeter" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">LED Meter</span>
+                <span class="text-[10px] text-slate-400 mt-1">Segmented LED bars with peak cells</span>
+              </button>
+              <button data-mode="dotspectrum" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Dot Spectrum</span>
+                <span class="text-[10px] text-slate-400 mt-1">Glowing dots riding on column lines</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Color Themes -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Color Palette Preset</label>
+              <select id="selectColorTheme" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
+                <option value="cyberpunk">Cyberpunk (Cyan &amp; Neon Pink)</option>
+                <option value="synthwave">Synthwave (Sunset Purple &amp; Orange)</option>
+                <option value="emerald">Matrix Emerald (Neon Lime &amp; Deep Teal)</option>
+                <option value="hyperviolet">Hyper Violet (Electric Indigo &amp; Fuchsia)</option>
+                <option value="sunset">Sunset Horizon (Gold, Magenta &amp; Blue)</option>
+                <option value="monochrome">Monochrome Minimal (Stark White &amp; Silver)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Background Style</label>
+              <select id="selectBgStyle" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
+                <option value="space">Dynamic Starfield &amp; Deep Space</option>
+                <option value="gradient">Dark Studio Vignette Gradient</option>
+                <option value="solid">Pure Pitch Black (OLED)</option>
+                <option value="grid">Cyber Retro Grid</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Slider Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Bass Reactivity</span>
+                <span id="labelReactivity">1.4x</span>
+              </div>
+              <input type="range" id="sliderReactivity" min="0.5" max="2.5" step="0.1" value="1.4" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Glow &amp; Bloom</span>
+                <span id="labelGlow">High</span>
+              </div>
+              <input type="range" id="sliderGlow" min="5" max="35" step="2" value="22" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Frequency Smoothing</span>
+                <span id="labelSmoothing">0.82</span>
+              </div>
+              <input type="range" id="sliderSmoothing" min="0.6" max="0.95" step="0.02" value="0.82" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Visualizer Opacity</span>
+                <span id="labelVizOpacity">100%</span>
+              </div>
+              <input type="range" id="sliderVizOpacity" min="0" max="100" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-400" />
+            </div>
+          </div>
+
+          <!-- New Overlay Effects: Floating Particles & Rotating Turntable -->
+          <div class="pt-3 border-t border-slate-800/80 grid grid-cols-1 gap-3">
+            <!-- Floating Particles Card -->
+            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="flex items-center space-x-2 cursor-pointer text-xs font-semibold text-slate-200">
+                  <input type="checkbox" id="checkFloatingParticles" checked class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
+                  <span>Floating Particles Overlay</span>
+                </label>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Ambient FX</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Particle Style</label>
+                  <select id="selectParticleStyle" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500">
+                    <option value="orbs" selected>Glowing Bokeh Orbs</option>
+                    <option value="sparks">Neon Embers &amp; Sparks</option>
+                    <option value="notes">Floating Musical Notes</option>
+                    <option value="stardust">Diamond Stardust</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Density</span>
+                    <span id="labelParticleDensity">45</span>
+                  </div>
+                  <input type="range" id="sliderParticleDensity" min="15" max="100" step="5" value="45" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400 mt-1.5" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Rotating Vinyl Turntable Card -->
+            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="flex items-center space-x-2 cursor-pointer text-xs font-semibold text-slate-200">
+                  <input type="checkbox" id="checkTurntable" checked class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
+                  <span>Rotating Turntable Disc</span>
+                </label>
+                <div class="flex items-center space-x-1">
+                  <label for="turntableImgInput" class="cursor-pointer px-2 py-0.5 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 text-[10px] font-medium transition">
+                    Upload Cover Art
+                  </label>
+                  <input type="file" id="turntableImgInput" accept="image/*" class="hidden" />
+                  <button id="btnClearTurntableImg" class="hidden text-slate-400 hover:text-rose-400 text-[10px] px-1" title="Reset Cover Image">&times;</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Spin Speed</span>
+                    <span id="labelTurntableSpeed">1.0x</span>
+                  </div>
+                  <input type="range" id="sliderTurntableSpeed" min="0.2" max="3.0" step="0.2" value="1.0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Disc Scale</span>
+                    <span id="labelTurntableSize">100%</span>
+                  </div>
+                  <input type="range" id="sliderTurntableSize" min="60" max="150" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-1" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Lyric Typography -->
+      <div id="leftPanelLyricStyle" data-left-panel="lyricstyle" class="hidden glass-panel rounded-2xl p-4 shadow-xl">
+          <h2 class="text-sm font-semibold tracking-wide text-slate-200 uppercase flex items-center space-x-2 mb-4">
+            <svg class="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>Lyric Typography</span>
+          </h2>
+        <div id="sectionLyricsStyle" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Lyric Display Format</label>
+              <select id="selectLyricLayout" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
+                <option value="kinetic">Kinetic Spotlight (Center Zoom &amp; Glow)</option>
+                <option value="subtitle">Modern Lower-Third Subtitle</option>
+                <option value="teleprompter">Rolling Teleprompter (3-line Stack)</option>
+                <option value="karaoke">Karaoke Progressive Glow</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Typography Font</label>
+              <select id="selectLyricFont" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
+                <option value="Orbitron">Orbitron (Futuristic Cyber)</option>
+                <option value="Inter" selected>Inter (Ultra Clean Modern)</option>
+                <option value="Montserrat">Montserrat (Bold Punchy)</option>
+                <option value="Cinzel">Cinzel (Cinematic Elegance)</option>
+                <option value="Space Grotesk">Space Grotesk (Tech Minimal)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Text Size</span>
+                <span id="labelTextSize">36px</span>
+              </div>
+              <input type="range" id="sliderLyricSize" min="20" max="64" step="2" value="36" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Vertical Position</span>
+                <span id="labelLyricPos">Center</span>
+              </div>
+              <input type="range" id="sliderLyricPos" min="20" max="85" step="1" value="50" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Active Font Color</label>
+              <div class="flex items-center space-x-2">
+                <input type="color" id="colorLyricFont" value="#ffffff" class="w-8 h-7 bg-transparent rounded cursor-pointer border-0 p-0" />
+                <span id="labelFontColorHex" class="text-xs text-slate-300 font-mono">#FFFFFF</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Font Color & Glow Pickers + Quick Swatches -->
+          <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Highlight / Glow Color</label>
+              <div class="flex items-center space-x-2">
+                <input type="color" id="colorLyricHighlight" value="#f43f5e" class="w-8 h-7 bg-transparent rounded cursor-pointer border-0 p-0" />
+                <span id="labelGlowColorHex" class="text-xs text-slate-300 font-mono">#F43F5E</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Upcoming / Past Line Color</label>
+              <div class="flex items-center space-x-2">
+                <input type="color" id="colorLyricSecondary" value="#94a3b8" class="w-8 h-7 bg-transparent rounded cursor-pointer border-0 p-0" />
+                <span id="labelSecColorHex" class="text-xs text-slate-300 font-mono">#94A3B8</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Font Color Presets</label>
+              <div class="flex items-center space-x-1.5">
+                <button type="button" data-fontcol="#ffffff" data-glowcol="#f43f5e" data-seccol="#94a3b8" class="font-color-preset w-6 h-6 rounded-full bg-white border-2 border-pink-500 shadow-sm" title="White & Neon Pink"></button>
+                <button type="button" data-fontcol="#fef08a" data-glowcol="#f59e0b" data-seccol="#cbd5e1" class="font-color-preset w-6 h-6 rounded-full bg-yellow-200 border-2 border-amber-500 shadow-sm" title="Cinema Gold"></button>
+                <button type="button" data-fontcol="#a5f3fc" data-glowcol="#06b6d4" data-seccol="#64748b" class="font-color-preset w-6 h-6 rounded-full bg-cyan-200 border-2 border-cyan-500 shadow-sm" title="Cyber Ice Cyan"></button>
+                <button type="button" data-fontcol="#fbcfe8" data-glowcol="#d946ef" data-seccol="#94a3b8" class="font-color-preset w-6 h-6 rounded-full bg-pink-200 border-2 border-fuchsia-500 shadow-sm" title="Synthwave Magenta"></button>
+                <button type="button" data-fontcol="#bbf7d0" data-glowcol="#10b981" data-seccol="#64748b" class="font-color-preset w-6 h-6 rounded-full bg-emerald-200 border-2 border-emerald-500 shadow-sm" title="Matrix Mint"></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-6 pt-1 text-xs">
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" id="checkBassBounce" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0" />
+              <span class="text-slate-300">Bass-Reactive Text Pulse (Bounces with Kick)</span>
+            </label>
+            <label class="flex items-center space-x-2 cursor-pointer">
+              <input type="checkbox" id="checkBackdropPill" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0" />
+              <span class="text-slate-300">Frosted Glass Text Backdrop</span>
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Center & Right Columns: Visualizer Viewport + Controls & Export (7 cols on lg) -->
+    <!-- Right Column: Visualizer Viewport + Video Export (7 cols on lg) -->
     <div id="studioColumn" class="lg:col-span-7 flex flex-col space-y-4">
       
       <!-- Video Preview Canvas Container -->
@@ -486,315 +803,20 @@
         </div>
       </div>
 
-      <!-- Customization Tabs: Visualizer Style / Lyrics Style / Video Export -->
+      <!-- Video Export Studio (only pane under the preview) -->
       <div id="configPane" class="glass-panel rounded-2xl p-4 shadow-xl">
-        <div class="border-b border-slate-800 pb-2 mb-4 flex space-x-3 text-xs font-semibold">
-          <button id="tabNavVisuals" class="pb-1.5 border-b-2 border-pink-500 text-pink-400 transition flex items-center space-x-1.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-            </svg>
-            <span>Visualizer Engine</span>
-          </button>
-
-          <button id="tabNavLyricsStyle" class="pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span>Lyric Typography</span>
-          </button>
-
-          <button id="tabNavExport" class="pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-4">
+          <h2 class="text-sm font-semibold tracking-wide text-slate-200 uppercase flex items-center space-x-2">
+            <svg class="w-4 h-4 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             <span>Video Export Studio</span>
-          </button>
-          <span class="flex-1"></span>
-          <button id="btnResetSettings" class="pb-1.5 text-[10px] font-medium text-slate-500 hover:text-slate-300 transition" title="Settings are saved in this browser automatically">Reset settings</button>
+          </h2>
+          <button id="btnResetSettings" class="text-[10px] font-medium text-slate-500 hover:text-slate-300 transition" title="Settings are saved in this browser automatically">Reset settings</button>
         </div>
 
-        <!-- Section 1: Visualizer Engine Styling -->
-        <div id="sectionVisuals" class="space-y-4">
-          <!-- Visualizer Mode Preset Selection -->
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-2">Visualizer Pattern</label>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <button data-mode="radial" class="viz-mode-btn p-2 rounded-xl bg-pink-500/15 border-2 border-pink-500 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-pink-300">Radial Spectrum</span>
-                <span class="text-[10px] text-slate-400 mt-1">Circular neon bars &amp; pulsing center</span>
-              </button>
-              <button data-mode="equalizer" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Cyber Skyline</span>
-                <span class="text-[10px] text-slate-400 mt-1">Symmetrical bars with floor reflection</span>
-              </button>
-              <button data-mode="waveform" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Neon Oscilloscope</span>
-                <span class="text-[10px] text-slate-400 mt-1">Multi-layered glowing audio waves</span>
-              </button>
-              <button data-mode="nebula" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Cosmic Vortex</span>
-                <span class="text-[10px] text-slate-400 mt-1">Reactive 3D starfield &amp; bass ripple</span>
-              </button>
-              <button data-mode="aurora" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Aurora Ribbons</span>
-                <span class="text-[10px] text-slate-400 mt-1">Flowing liquid sine gradients</span>
-              </button>
-              <button data-mode="dualring" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Dual Infinity</span>
-                <span class="text-[10px] text-slate-400 mt-1">Twin intertwined orbiting spectrums</span>
-              </button>
-              <button data-mode="pulserings" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Pulse Rings</span>
-                <span class="text-[10px] text-slate-400 mt-1">Bass-thumping core, rings &amp; shockwaves</span>
-              </button>
-              <button data-mode="mirrorbars" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Mirror Bars</span>
-                <span class="text-[10px] text-slate-400 mt-1">Centre-out spectrum mirrored up &amp; down</span>
-              </button>
-              <button data-mode="inferno" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Inferno Spectrum</span>
-                <span class="text-[10px] text-slate-400 mt-1">Dense flame bars with falling peaks</span>
-              </button>
-              <button data-mode="spiralburst" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Spiral Burst</span>
-                <span class="text-[10px] text-slate-400 mt-1">Twin counter-rotating curved bar rings</span>
-              </button>
-              <button data-mode="vumeter" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">VU Meter</span>
-                <span class="text-[10px] text-slate-400 mt-1">Analog needle gauge with peak lamp</span>
-              </button>
-              <button data-mode="ledmeter" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">LED Meter</span>
-                <span class="text-[10px] text-slate-400 mt-1">Segmented LED bars with peak cells</span>
-              </button>
-              <button data-mode="dotspectrum" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
-                <span class="font-semibold text-slate-200">Dot Spectrum</span>
-                <span class="text-[10px] text-slate-400 mt-1">Glowing dots riding on column lines</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Color Themes -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Color Palette Preset</label>
-              <select id="selectColorTheme" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
-                <option value="cyberpunk">Cyberpunk (Cyan &amp; Neon Pink)</option>
-                <option value="synthwave">Synthwave (Sunset Purple &amp; Orange)</option>
-                <option value="emerald">Matrix Emerald (Neon Lime &amp; Deep Teal)</option>
-                <option value="hyperviolet">Hyper Violet (Electric Indigo &amp; Fuchsia)</option>
-                <option value="sunset">Sunset Horizon (Gold, Magenta &amp; Blue)</option>
-                <option value="monochrome">Monochrome Minimal (Stark White &amp; Silver)</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Background Style</label>
-              <select id="selectBgStyle" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
-                <option value="space">Dynamic Starfield &amp; Deep Space</option>
-                <option value="gradient">Dark Studio Vignette Gradient</option>
-                <option value="solid">Pure Pitch Black (OLED)</option>
-                <option value="grid">Cyber Retro Grid</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Slider Controls -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Bass Reactivity</span>
-                <span id="labelReactivity">1.4x</span>
-              </div>
-              <input type="range" id="sliderReactivity" min="0.5" max="2.5" step="0.1" value="1.4" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Glow &amp; Bloom</span>
-                <span id="labelGlow">High</span>
-              </div>
-              <input type="range" id="sliderGlow" min="5" max="35" step="2" value="22" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Frequency Smoothing</span>
-                <span id="labelSmoothing">0.82</span>
-              </div>
-              <input type="range" id="sliderSmoothing" min="0.6" max="0.95" step="0.02" value="0.82" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Visualizer Opacity</span>
-                <span id="labelVizOpacity">100%</span>
-              </div>
-              <input type="range" id="sliderVizOpacity" min="0" max="100" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-400" />
-            </div>
-          </div>
-
-          <!-- New Overlay Effects: Floating Particles & Rotating Turntable -->
-          <div class="pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Floating Particles Card -->
-            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
-              <div class="flex items-center justify-between">
-                <label class="flex items-center space-x-2 cursor-pointer text-xs font-semibold text-slate-200">
-                  <input type="checkbox" id="checkFloatingParticles" checked class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
-                  <span>Floating Particles Overlay</span>
-                </label>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Ambient FX</span>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[10px] text-slate-400 mb-1">Particle Style</label>
-                  <select id="selectParticleStyle" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500">
-                    <option value="orbs" selected>Glowing Bokeh Orbs</option>
-                    <option value="sparks">Neon Embers &amp; Sparks</option>
-                    <option value="notes">Floating Musical Notes</option>
-                    <option value="stardust">Diamond Stardust</option>
-                  </select>
-                </div>
-                <div>
-                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
-                    <span>Density</span>
-                    <span id="labelParticleDensity">45</span>
-                  </div>
-                  <input type="range" id="sliderParticleDensity" min="15" max="100" step="5" value="45" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400 mt-1.5" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Rotating Vinyl Turntable Card -->
-            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
-              <div class="flex items-center justify-between">
-                <label class="flex items-center space-x-2 cursor-pointer text-xs font-semibold text-slate-200">
-                  <input type="checkbox" id="checkTurntable" checked class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
-                  <span>Rotating Turntable Disc</span>
-                </label>
-                <div class="flex items-center space-x-1">
-                  <label for="turntableImgInput" class="cursor-pointer px-2 py-0.5 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 text-[10px] font-medium transition">
-                    Upload Cover Art
-                  </label>
-                  <input type="file" id="turntableImgInput" accept="image/*" class="hidden" />
-                  <button id="btnClearTurntableImg" class="hidden text-slate-400 hover:text-rose-400 text-[10px] px-1" title="Reset Cover Image">&times;</button>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
-                    <span>Spin Speed</span>
-                    <span id="labelTurntableSpeed">1.0x</span>
-                  </div>
-                  <input type="range" id="sliderTurntableSpeed" min="0.2" max="3.0" step="0.2" value="1.0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1" />
-                </div>
-                <div>
-                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
-                    <span>Disc Scale</span>
-                    <span id="labelTurntableSize">100%</span>
-                  </div>
-                  <input type="range" id="sliderTurntableSize" min="60" max="150" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-1" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 2: Lyric Typography Styling -->
-        <div id="sectionLyricsStyle" class="hidden space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Lyric Display Format</label>
-              <select id="selectLyricLayout" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
-                <option value="kinetic">Kinetic Spotlight (Center Zoom &amp; Glow)</option>
-                <option value="subtitle">Modern Lower-Third Subtitle</option>
-                <option value="teleprompter">Rolling Teleprompter (3-line Stack)</option>
-                <option value="karaoke">Karaoke Progressive Glow</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Typography Font</label>
-              <select id="selectLyricFont" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
-                <option value="Orbitron">Orbitron (Futuristic Cyber)</option>
-                <option value="Inter" selected>Inter (Ultra Clean Modern)</option>
-                <option value="Montserrat">Montserrat (Bold Punchy)</option>
-                <option value="Cinzel">Cinzel (Cinematic Elegance)</option>
-                <option value="Space Grotesk">Space Grotesk (Tech Minimal)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Text Size</span>
-                <span id="labelTextSize">36px</span>
-              </div>
-              <input type="range" id="sliderLyricSize" min="20" max="64" step="2" value="36" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Vertical Position</span>
-                <span id="labelLyricPos">Center</span>
-              </div>
-              <input type="range" id="sliderLyricPos" min="20" max="85" step="1" value="50" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
-            </div>
-
-            <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Active Font Color</label>
-              <div class="flex items-center space-x-2">
-                <input type="color" id="colorLyricFont" value="#ffffff" class="w-8 h-7 bg-transparent rounded cursor-pointer border-0 p-0" />
-                <span id="labelFontColorHex" class="text-xs text-slate-300 font-mono">#FFFFFF</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Font Color & Glow Pickers + Quick Swatches -->
-          <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-            <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Highlight / Glow Color</label>
-              <div class="flex items-center space-x-2">
-                <input type="color" id="colorLyricHighlight" value="#f43f5e" class="w-8 h-7 bg-transparent rounded cursor-pointer border-0 p-0" />
-                <span id="labelGlowColorHex" class="text-xs text-slate-300 font-mono">#F43F5E</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Upcoming / Past Line Color</label>
-              <div class="flex items-center space-x-2">
-                <input type="color" id="colorLyricSecondary" value="#94a3b8" class="w-8 h-7 bg-transparent rounded cursor-pointer border-0 p-0" />
-                <span id="labelSecColorHex" class="text-xs text-slate-300 font-mono">#94A3B8</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-[11px] text-slate-400 mb-1">Font Color Presets</label>
-              <div class="flex items-center space-x-1.5">
-                <button type="button" data-fontcol="#ffffff" data-glowcol="#f43f5e" data-seccol="#94a3b8" class="font-color-preset w-6 h-6 rounded-full bg-white border-2 border-pink-500 shadow-sm" title="White & Neon Pink"></button>
-                <button type="button" data-fontcol="#fef08a" data-glowcol="#f59e0b" data-seccol="#cbd5e1" class="font-color-preset w-6 h-6 rounded-full bg-yellow-200 border-2 border-amber-500 shadow-sm" title="Cinema Gold"></button>
-                <button type="button" data-fontcol="#a5f3fc" data-glowcol="#06b6d4" data-seccol="#64748b" class="font-color-preset w-6 h-6 rounded-full bg-cyan-200 border-2 border-cyan-500 shadow-sm" title="Cyber Ice Cyan"></button>
-                <button type="button" data-fontcol="#fbcfe8" data-glowcol="#d946ef" data-seccol="#94a3b8" class="font-color-preset w-6 h-6 rounded-full bg-pink-200 border-2 border-fuchsia-500 shadow-sm" title="Synthwave Magenta"></button>
-                <button type="button" data-fontcol="#bbf7d0" data-glowcol="#10b981" data-seccol="#64748b" class="font-color-preset w-6 h-6 rounded-full bg-emerald-200 border-2 border-emerald-500 shadow-sm" title="Matrix Mint"></button>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex items-center space-x-6 pt-1 text-xs">
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" id="checkBassBounce" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0" />
-              <span class="text-slate-300">Bass-Reactive Text Pulse (Bounces with Kick)</span>
-            </label>
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" id="checkBackdropPill" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0" />
-              <span class="text-slate-300">Frosted Glass Text Backdrop</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Section 3: Video Export Studio -->
-        <div id="sectionExport" class="hidden space-y-4">
+        <!-- Video Export Studio -->
+        <div id="sectionExport" class="space-y-4">
           <div class="bg-gradient-to-r from-purple-950/40 via-pink-950/30 to-slate-900/60 border border-purple-500/20 rounded-xl p-3.5">
             <div class="flex items-start space-x-3">
               <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1333,9 +1355,6 @@
     const btnResetSync = document.getElementById('btnResetSync');
 
     // Tab Navigation
-    const tabNavVisuals = document.getElementById('tabNavVisuals');
-    const tabNavLyricsStyle = document.getElementById('tabNavLyricsStyle');
-    const tabNavExport = document.getElementById('tabNavExport');
     const sectionVisuals = document.getElementById('sectionVisuals');
     const sectionLyricsStyle = document.getElementById('sectionLyricsStyle');
     const sectionExport = document.getElementById('sectionExport');
@@ -2363,20 +2382,34 @@
     });
 
     // Main Customization Tab Switches
-    function switchCustomizationTab(activeBtn, activeSection) {
-      [tabNavVisuals, tabNavLyricsStyle, tabNavExport].forEach(b => {
-        b.className = 'pb-1.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-1.5';
+    // Left pane tabs: Audio / Lyrics, Visualizer, Lyric Typography
+    const LEFT_TAB_ACTIVE = 'bg-pink-500/15 text-pink-300 ring-1 ring-pink-500/40';
+    function switchLeftTab(name) {
+      if (!document.querySelector(`[data-left-panel="${name}"]`)) name = 'audio';
+      document.querySelectorAll('[data-left-tab]').forEach(btn => {
+        const active = btn.dataset.leftTab === name;
+        LEFT_TAB_ACTIVE.split(' ').forEach(c => btn.classList.toggle(c, active));
+        btn.classList.toggle('text-slate-400', !active);
+        btn.classList.toggle('hover:text-slate-200', !active);
       });
-      [sectionVisuals, sectionLyricsStyle, sectionExport].forEach(s => s.classList.add('hidden'));
-
-      activeBtn.className = 'pb-1.5 border-b-2 border-pink-500 text-pink-400 transition flex items-center space-x-1.5';
-      activeSection.classList.remove('hidden');
+      document.querySelectorAll('[data-left-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.leftPanel !== name));
+      setupColumn.scrollTop = 0;
+      try { localStorage.setItem('aura_left_tab', name); } catch (e) {}
     }
+    const setupColumn = document.getElementById('setupColumn');
+    document.querySelectorAll('[data-left-tab]').forEach(btn => btn.addEventListener('click', () => switchLeftTab(btn.dataset.leftTab)));
+    let savedLeftTab = 'audio';
+    try { savedLeftTab = localStorage.getItem('aura_left_tab') || 'audio'; } catch (e) {}
+    switchLeftTab(savedLeftTab);
 
-    tabNavVisuals.addEventListener('click', () => switchCustomizationTab(tabNavVisuals, sectionVisuals));
-    tabNavLyricsStyle.addEventListener('click', () => switchCustomizationTab(tabNavLyricsStyle, sectionLyricsStyle));
-    tabNavExport.addEventListener('click', () => switchCustomizationTab(tabNavExport, sectionExport));
-    btnExportHeader.addEventListener('click', () => switchCustomizationTab(tabNavExport, sectionExport));
+    // Header "Export Video" button: bring the export pane into view and flash it
+    btnExportHeader.addEventListener('click', () => {
+      const pane = document.getElementById('configPane');
+      pane.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      pane.scrollTop = 0;
+      pane.classList.add('ring-2', 'ring-pink-500');
+      setTimeout(() => pane.classList.remove('ring-2', 'ring-pink-500'), 900);
+    });
 
     // Visualizer Preset Mode Buttons
     vizModeButtons.forEach(btn => {
@@ -5036,7 +5069,7 @@
         el.addEventListener('change', scheduleSettingsSave);
       }
     }
-    document.getElementById('configPane').addEventListener('click', (e) => {
+    document.getElementById('appMain').addEventListener('click', (e) => {
       if (e.target.closest('.viz-mode-btn, [data-fontcol]')) scheduleSettingsSave();
     });
     turntableImgInput.addEventListener('change', () => {
