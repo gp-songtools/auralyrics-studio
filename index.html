@@ -556,6 +556,14 @@
                 <span class="font-semibold text-slate-200">VU Meter</span>
                 <span class="text-[10px] text-slate-400 mt-1">Analog needle gauge with peak lamp</span>
               </button>
+              <button data-mode="ledmeter" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">LED Meter</span>
+                <span class="text-[10px] text-slate-400 mt-1">Segmented LED bars with peak cells</span>
+              </button>
+              <button data-mode="dotspectrum" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Dot Spectrum</span>
+                <span class="text-[10px] text-slate-400 mt-1">Glowing dots riding on column lines</span>
+              </button>
             </div>
           </div>
 
@@ -585,7 +593,7 @@
           </div>
 
           <!-- Slider Controls -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
             <div>
               <div class="flex justify-between text-[11px] text-slate-400 mb-1">
                 <span>Bass Reactivity</span>
@@ -608,6 +616,14 @@
                 <span id="labelSmoothing">0.82</span>
               </div>
               <input type="range" id="sliderSmoothing" min="0.6" max="0.95" step="0.02" value="0.82" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400" />
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Visualizer Opacity</span>
+                <span id="labelVizOpacity">100%</span>
+              </div>
+              <input type="range" id="sliderVizOpacity" min="0" max="100" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-400" />
             </div>
           </div>
 
@@ -929,7 +945,7 @@
           <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold flex-shrink-0">3</span>
           <div>
             <h4 class="font-semibold text-white">Style Visuals &amp; Typography</h4>
-            <p class="text-slate-400 mt-0.5">Choose from 11 visualizer patterns (Radial, Cyberpunk, Waveform, Cosmic Vortex, Pulse Rings, VU Meter and more), color palettes, reactive starfields, and lyric typography.</p>
+            <p class="text-slate-400 mt-0.5">Choose from 13 visualizer patterns (Radial, Cyberpunk, Waveform, Cosmic Vortex, Pulse Rings, VU Meter and more), color palettes, reactive starfields, and lyric typography.</p>
           </div>
         </div>
 
@@ -1134,12 +1150,13 @@
         currentIndex: -1
       },
       visualizer: {
-        mode: 'radial', // radial, equalizer, waveform, nebula, aurora, dualring, pulserings, mirrorbars, inferno, spiralburst, vumeter
+        mode: 'radial', // radial, equalizer, waveform, nebula, aurora, dualring, pulserings, mirrorbars, inferno, spiralburst, vumeter, ledmeter, dotspectrum
         theme: 'cyberpunk',
         bgStyle: 'space',
         reactivity: 1.4,
         glow: 22,
         smoothing: 0.82,
+        opacity: 1, // visualizer layer opacity (0-1)
         layout: 'kinetic', // kinetic, subtitle, teleprompter, karaoke
         font: 'Inter',
         textSize: 36,
@@ -2378,6 +2395,12 @@
       state.visualizer.glow = parseInt(e.target.value, 10);
       labelGlow.textContent = state.visualizer.glow > 25 ? 'Intense' : (state.visualizer.glow > 15 ? 'High' : 'Soft');
     });
+    const sliderVizOpacity = document.getElementById('sliderVizOpacity');
+    const labelVizOpacity = document.getElementById('labelVizOpacity');
+    sliderVizOpacity.addEventListener('input', (e) => {
+      state.visualizer.opacity = parseInt(e.target.value, 10) / 100;
+      labelVizOpacity.textContent = `${e.target.value}%`;
+    });
     sliderSmoothing.addEventListener('input', (e) => {
       state.visualizer.smoothing = parseFloat(e.target.value);
       labelSmoothing.textContent = state.visualizer.smoothing.toFixed(2);
@@ -2792,46 +2815,60 @@
 
       // 2. Draw Active Visualizer Mode
       const vRect = layerPixelRect('visualizer', width, height);
-      ctx.save();
-      ctx.translate(vRect.x, vRect.y);
+      // Reduced opacity renders into an offscreen layer, then composites it at the chosen alpha
+      const vizOpacity = state.visualizer.opacity ?? 1;
+      const vctx = vizOpacity < 1 ? getVizLayerCtx(width, height) : ctx;
+      vctx.save();
+      vctx.translate(vRect.x, vRect.y);
       switch (state.visualizer.mode) {
         case 'radial':
-          drawRadialSpectrum(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
+          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
           break;
         case 'equalizer':
-          drawCyberEqualizer(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawCyberEqualizer(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'waveform':
-          drawNeonWaveform(ctx, vRect.w, vRect.h, palette, bassEnergy, glowAmt);
+          drawNeonWaveform(vctx, vRect.w, vRect.h, palette, bassEnergy, glowAmt);
           break;
         case 'nebula':
-          drawCosmicVortex(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
+          drawCosmicVortex(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
           break;
         case 'aurora':
-          drawAuroraRibbons(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
+          drawAuroraRibbons(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
           break;
         case 'dualring':
-          drawDualInfinity(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
+          drawDualInfinity(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
           break;
         case 'pulserings':
-          drawPulseRings(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawPulseRings(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'mirrorbars':
-          drawMirrorBars(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawMirrorBars(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'inferno':
-          drawInfernoSpectrum(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawInfernoSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'spiralburst':
-          drawSpiralBurst(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawSpiralBurst(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          break;
+        case 'ledmeter':
+          drawLedMeter(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          break;
+        case 'dotspectrum':
+          drawDotSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         case 'vumeter':
-          drawVuMeter(ctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawVuMeter(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
           break;
         default:
-          drawRadialSpectrum(ctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
+          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
       }
-      ctx.restore();
+      vctx.restore();
+      if (vctx !== ctx && vizOpacity > 0) {
+        ctx.globalAlpha = vizOpacity;
+        ctx.drawImage(vizLayerCanvas, 0, 0);
+        ctx.globalAlpha = 1;
+      }
 
       // 2.5 Draw Floating Particles Overlay (if enabled)
       if (state.visualizer.floatingParticles) {
@@ -3513,6 +3550,103 @@
       ctx.arc(px, py, unit * (0.026 + bassEnergy * 0.006), 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
+    }
+
+    // --- Mode 12: LED Meter (segmented LED bar spectrum with peak-hold cells) ---
+    let ledPeaks = [];
+
+    function drawLedMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      // Column / row counts follow the box size so cells stay legible when the layer is resized
+      const cols = Math.max(12, Math.min(64, Math.round(width / 26)));
+      const rows = Math.max(6, Math.min(28, Math.round(height / 22)));
+      const padX = width * 0.02, padY = height * 0.04;
+      const cellW = (width - padX * 2) / cols;
+      const cellH = (height - padY * 2) / rows;
+      const gapX = Math.max(1, cellW * 0.16);
+      const gapY = Math.max(1, cellH * 0.3);
+      if (ledPeaks.length !== cols) ledPeaks = new Array(cols).fill(0);
+
+      const lit = new Path2D(), dim = new Path2D(), peaks = new Path2D();
+      for (let c = 0; c < cols; c++) {
+        const v = shapeBar(sampleSpectrum(c / (cols - 1)), reactivity);
+        const on = Math.round(v * rows);
+        ledPeaks[c] = Math.max(on, ledPeaks[c] - 0.12);
+        const peakRow = Math.round(ledPeaks[c]) - 1;
+        const x = padX + c * cellW + gapX / 2;
+        for (let r = 0; r < rows; r++) {
+          const y = height - padY - (r + 1) * cellH + gapY / 2;
+          const target = r < on ? lit : (r === peakRow && peakRow >= on ? peaks : dim);
+          target.rect(x, y, cellW - gapX, cellH - gapY);
+        }
+      }
+
+      ctx.fillStyle = palette.primary;
+      ctx.globalAlpha = 0.07;
+      ctx.fill(dim);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = glowAmt * 0.6;
+      ctx.shadowColor = palette.primary;
+      ctx.fill(lit);
+      ctx.fillStyle = palette.accent;
+      ctx.shadowColor = palette.accent;
+      ctx.fill(peaks);
+      ctx.shadowBlur = 0;
+    }
+
+    // --- Mode 13: Dot Spectrum (glowing level dots riding on thin column lines) ---
+    let dotLevels = [];
+
+    function drawDotSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      const cols = Math.max(16, Math.min(80, Math.round(width / 22)));
+      const padX = width * 0.02;
+      const top = height * 0.08, bottom = height * 0.92;
+      const slot = (width - padX * 2) / cols;
+      const radius = Math.max(2.5, Math.min(slot * 0.4, height * 0.06));
+      if (dotLevels.length !== cols) dotLevels = new Array(cols).fill(0);
+
+      // Thin column guide lines
+      const stems = new Path2D();
+      for (let c = 0; c < cols; c++) {
+        const x = padX + (c + 0.5) * slot;
+        stems.moveTo(x, top);
+        stems.lineTo(x, bottom);
+      }
+      ctx.strokeStyle = palette.primary;
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = Math.max(1, slot * 0.1);
+      ctx.stroke(stems);
+      ctx.globalAlpha = 1;
+
+      // Dots glide toward their level for a fluid, liquid motion
+      const dots = new Path2D();
+      for (let c = 0; c < cols; c++) {
+        const v = shapeBar(sampleSpectrum(c / (cols - 1)), reactivity);
+        dotLevels[c] += (v - dotLevels[c]) * 0.35;
+        const x = padX + (c + 0.5) * slot;
+        const y = bottom - dotLevels[c] * (bottom - top);
+        dots.moveTo(x + radius, y);
+        dots.arc(x, y, radius, 0, Math.PI * 2);
+      }
+      ctx.fillStyle = palette.primary;
+      ctx.shadowBlur = glowAmt;
+      ctx.shadowColor = palette.primary;
+      ctx.fill(dots);
+      ctx.shadowBlur = 0;
+    }
+
+    // Offscreen layer used when the visualizer is drawn with reduced opacity
+    let vizLayerCanvas = null, vizLayerCtx = null;
+    function getVizLayerCtx(width, height) {
+      if (!vizLayerCanvas) {
+        vizLayerCanvas = document.createElement('canvas');
+        vizLayerCtx = vizLayerCanvas.getContext('2d');
+      }
+      if (vizLayerCanvas.width !== width || vizLayerCanvas.height !== height) {
+        vizLayerCanvas.width = width;
+        vizLayerCanvas.height = height;
+      }
+      vizLayerCtx.clearRect(0, 0, width, height);
+      return vizLayerCtx;
     }
 
     // --- Floating Particles Overlay Renderer ---

@@ -12,7 +12,7 @@ A single-file, zero-backend browser web application for uploading music creation
   - **Align to Your Lyrics**: Both Whisper modes can keep the lyric lines you pasted into the editor and use the transcription only for timing (fuzzy word alignment, with unmatched lines interpolated).
   - **Live Browser Listener**: Real-time Web Speech API listener.
   - **Tap-to-Sync Assistant**: Stamp lyric lines on the beat using the `S` or `T` key (leaving `Spacebar` dedicated to Play/Pause), plus full-song stretching and `-1s` / `+1s` offset buttons.
-- **11 Reactive Visualizer Modes**: Radial Spectrum, Cyber Skyline Equalizer, Neon Oscilloscope Waveform, Cosmic Vortex, Aurora Ribbons, Dual Infinity, Pulse Rings (bass-reactive core with beat shockwaves), Mirror Bars, Inferno Spectrum, Spiral Burst, and an analog VU Meter.
+- **13 Reactive Visualizer Modes**: Radial Spectrum, Cyber Skyline Equalizer, Neon Oscilloscope Waveform, Cosmic Vortex, Aurora Ribbons, Dual Infinity, Pulse Rings (bass-reactive core with beat shockwaves), Mirror Bars, Inferno Spectrum, Spiral Burst, an analog VU Meter, LED Meter, and Dot Spectrum, plus a Visualizer Opacity slider.
 - **Drag-and-Resize Layout Editor**: Click **Layout** (or press `L`) above the preview to move and resize the Visualizer, Turntable, and Lyrics layers directly on the canvas, with edge/centre snapping, Shift to keep proportions, arrow-key nudging, and per-layer reset. Layouts are stored as fractions of the frame, so they carry across resolutions and aspect ratios, and the editor overlay is never recorded into exports.
 - **Layered Visual Overlays**:
   - **Rotating Vinyl Turntable**: Spinning vinyl platter with concentric grooves, specular sheen, and circular-clipped custom cover art upload.
