@@ -476,6 +476,26 @@
                 <span class="font-semibold text-slate-200">Dual Infinity</span>
                 <span class="text-[10px] text-slate-400 mt-1">Twin intertwined orbiting spectrums</span>
               </button>
+              <button data-mode="pulserings" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Pulse Rings</span>
+                <span class="text-[10px] text-slate-400 mt-1">Bass-thumping core, rings &amp; shockwaves</span>
+              </button>
+              <button data-mode="mirrorbars" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Mirror Bars</span>
+                <span class="text-[10px] text-slate-400 mt-1">Centre-out spectrum mirrored up &amp; down</span>
+              </button>
+              <button data-mode="inferno" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Inferno Spectrum</span>
+                <span class="text-[10px] text-slate-400 mt-1">Dense flame bars with falling peaks</span>
+              </button>
+              <button data-mode="spiralburst" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">Spiral Burst</span>
+                <span class="text-[10px] text-slate-400 mt-1">Twin counter-rotating curved bar rings</span>
+              </button>
+              <button data-mode="vumeter" class="viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between">
+                <span class="font-semibold text-slate-200">VU Meter</span>
+                <span class="text-[10px] text-slate-400 mt-1">Analog needle gauge with peak lamp</span>
+              </button>
             </div>
           </div>
 
@@ -849,7 +869,7 @@
           <span class="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold flex-shrink-0">3</span>
           <div>
             <h4 class="font-semibold text-white">Style Visuals &amp; Typography</h4>
-            <p class="text-slate-400 mt-0.5">Choose from 6 visualizer patterns (Radial, Cyberpunk, Waveform, Cosmic Vortex), color palettes, reactive starfields, and lyric typography.</p>
+            <p class="text-slate-400 mt-0.5">Choose from 11 visualizer patterns (Radial, Cyberpunk, Waveform, Cosmic Vortex, Pulse Rings, VU Meter and more), color palettes, reactive starfields, and lyric typography.</p>
           </div>
         </div>
 
@@ -1054,7 +1074,7 @@
         currentIndex: -1
       },
       visualizer: {
-        mode: 'radial', // radial, equalizer, waveform, nebula, aurora, dualring
+        mode: 'radial', // radial, equalizer, waveform, nebula, aurora, dualring, pulserings, mirrorbars, inferno, spiralburst, vumeter
         theme: 'cyberpunk',
         bgStyle: 'space',
         reactivity: 1.4,
@@ -2476,6 +2496,21 @@
         case 'dualring':
           drawDualInfinity(ctx, width, height, palette, bassEnergy, midEnergy, glowAmt);
           break;
+        case 'pulserings':
+          drawPulseRings(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          break;
+        case 'mirrorbars':
+          drawMirrorBars(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          break;
+        case 'inferno':
+          drawInfernoSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          break;
+        case 'spiralburst':
+          drawSpiralBurst(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          break;
+        case 'vumeter':
+          drawVuMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt);
+          break;
         default:
           drawRadialSpectrum(ctx, width, height, palette, bassEnergy, midEnergy, reactivity, glowAmt);
       }
@@ -2791,6 +2826,365 @@
           ctx.stroke();
         }
       });
+    }
+
+    // --- Shared spectrum sampling for the bar-based modes ---
+    // Maps t in [0,1] logarithmically across ~90 Hz – 15 kHz so bass doesn't hog half the bars,
+    // with a gentle treble tilt so high bars still move. The analyser's byte values sit high for
+    // loud, mastered music, so a noise floor + power curve restores visible dynamics.
+    function sampleSpectrum(t) {
+      if (!dataFrequencyArray) return 0;
+      const minBin = 1;
+      const maxBin = Math.min(dataFrequencyArray.length - 1, 175);
+      const pos = minBin * Math.pow(maxBin / minBin, Math.max(0, Math.min(1, t)));
+      const i = Math.floor(pos);
+      const f = pos - i;
+      const a = dataFrequencyArray[i] || 0;
+      const b = dataFrequencyArray[Math.min(i + 1, maxBin)] || 0;
+      const raw = Math.min(1, ((a + (b - a) * f) / 255) * (1 + t * 0.25));
+      return Math.pow(Math.max(0, (raw - 0.35) / 0.65), 1.7);
+    }
+
+    // Applies the Bass Reactivity slider (relative to its 1.4x default) with a soft knee,
+    // so loud passages round off near the top instead of flat-topping
+    function shapeBar(v, reactivity) {
+      const x = v * reactivity * 0.8;
+      return x <= 0.7 ? x : 0.7 + 0.3 * Math.tanh((x - 0.7) / 0.3);
+    }
+
+    function addRoundRect(ctx, x, y, w, h, r) {
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, Math.min(r, w / 2, h / 2));
+      else ctx.rect(x, y, w, h);
+    }
+
+    // --- Mode 7: Pulse Rings (bass-reactive core, concentric rings & beat shockwaves) ---
+    const pulseRingState = { level: 0, floor: 1, ceil: 0, prevNorm: 0, lastHit: 0, waves: [] };
+
+    function drawPulseRings(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      const cx = width / 2;
+      const cy = height / 2;
+      const unit = Math.min(width, height);
+      const st = pulseRingState;
+      const now = performance.now();
+
+      // Kick-drum band (~80-260 Hz), normalised against the track's own running floor/ceiling
+      // so the core thumps on quiet mixes and brick-walled masters alike
+      let norm;
+      if (state.audio.isPlaying && dataFrequencyArray) {
+        const kick = (dataFrequencyArray[1] + dataFrequencyArray[2] + dataFrequencyArray[3]) / (3 * 255);
+        st.floor = kick < st.floor ? kick : st.floor + (kick - st.floor) * 0.02;
+        st.ceil = kick > st.ceil ? kick : st.ceil - (st.ceil - kick) * 0.008;
+        norm = Math.pow(Math.max(0, Math.min(1, (kick - st.floor) / Math.max(0.08, st.ceil - st.floor))), 1.5);
+      } else {
+        norm = 0.25 + Math.sin(now * 0.002) * 0.15; // idle breathing
+      }
+
+      // Fast attack / slower release so each kick reads as a visible thump
+      st.level += (norm - st.level) * (norm > st.level ? 0.65 : 0.12);
+      const lvl = Math.min(1.6, st.level * (reactivity / 1.4));
+      const punch = lvl;
+
+      // Beat detection: the kick crosses up through the top of its range -> emit a shockwave ring
+      if (state.audio.isPlaying && norm > 0.7 && st.prevNorm <= 0.7 && now - st.lastHit > 160) {
+        st.waves.push({ r: unit * 0.1, alpha: 0.9 });
+        st.lastHit = now;
+      }
+      st.prevNorm = norm;
+
+      const coreR = unit * (0.045 + lvl * 0.055);
+
+      // Soft halo
+      const haloR = unit * (0.3 + lvl * 0.12);
+      const halo = ctx.createRadialGradient(cx, cy, coreR * 0.5, cx, cy, haloR);
+      halo.addColorStop(0, `${palette.primary}40`);
+      halo.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(cx, cy, haloR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Concentric rings spread apart with the bass
+      ctx.shadowBlur = glowAmt;
+      ctx.shadowColor = palette.primary;
+      ctx.strokeStyle = palette.primary;
+      const rings = 5;
+      for (let i = 1; i <= rings; i++) {
+        const spread = 1 + lvl * 0.35 + punch * 0.5 * (i / rings);
+        const r = coreR + unit * 0.042 * i * spread;
+        ctx.globalAlpha = Math.max(0.12, Math.min(1, (0.9 - i * 0.14) * (0.6 + lvl * 0.5)));
+        ctx.lineWidth = Math.max(1.5, unit * 0.0045 * (1 + lvl * 0.8) * (1 - i * 0.1));
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Expanding beat shockwaves
+      ctx.strokeStyle = palette.secondary;
+      ctx.shadowColor = palette.secondary;
+      st.waves = st.waves.filter(w => w.alpha > 0.03);
+      for (const w of st.waves) {
+        w.r += unit * 0.008;
+        w.alpha *= 0.94;
+        ctx.globalAlpha = w.alpha;
+        ctx.lineWidth = Math.max(1.5, unit * 0.003);
+        ctx.beginPath();
+        ctx.arc(cx, cy, w.r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // Glowing core
+      ctx.shadowBlur = glowAmt * 2;
+      ctx.shadowColor = palette.primary;
+      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+      core.addColorStop(0, '#ffffff');
+      core.addColorStop(0.35, palette.primary);
+      core.addColorStop(1, `${palette.primary}cc`);
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // --- Mode 8: Mirror Bars (symmetric centre-out spectrum, mirrored above & below) ---
+    function drawMirrorBars(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      const half = 40;
+      const total = half * 2;
+      const cy = height / 2;
+      const marginX = width * 0.06;
+      const slot = (width - marginX * 2) / total;
+      const barW = Math.max(2, slot * 0.68);
+      const maxH = height * 0.3;
+
+      const grad = ctx.createLinearGradient(0, cy - maxH, 0, cy + maxH);
+      grad.addColorStop(0, palette.accent);
+      grad.addColorStop(0.42, palette.primary);
+      grad.addColorStop(0.58, palette.primary);
+      grad.addColorStop(1, palette.accent);
+
+      ctx.beginPath();
+      for (let k = 0; k < total; k++) {
+        const d = k < half ? half - 1 - k : k - half; // 0 at the centre, bass in the middle
+        const v = shapeBar(sampleSpectrum(d / (half - 1)), reactivity);
+        const h = Math.max(height * 0.006, v * maxH);
+        const x = marginX + k * slot + (slot - barW) / 2;
+        addRoundRect(ctx, x, cy - h, barW, h * 2, barW / 2);
+      }
+      ctx.shadowBlur = glowAmt;
+      ctx.shadowColor = palette.primary;
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Thin centre line
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = palette.primary;
+      ctx.fillRect(marginX, cy - 1, width - marginX * 2, 2);
+      ctx.globalAlpha = 1;
+    }
+
+    // --- Mode 9: Inferno Spectrum (dense flame bars with falling peak caps) ---
+    const infernoPeaks = [];
+
+    function drawInfernoSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      const bars = 128;
+      const baseY = height * 0.9;
+      const maxH = height * 0.5;
+      const slot = width / bars;
+      const barW = Math.max(1, slot * 0.62);
+
+      const grad = ctx.createLinearGradient(0, baseY, 0, baseY - maxH);
+      grad.addColorStop(0, palette.secondary);
+      grad.addColorStop(0.6, palette.primary);
+      grad.addColorStop(1, '#ffffff');
+
+      // Warm floor glow
+      const floor = ctx.createLinearGradient(0, baseY - height * 0.12, 0, baseY + height * 0.04);
+      floor.addColorStop(0, 'rgba(0,0,0,0)');
+      floor.addColorStop(1, `${palette.secondary}${Math.round(40 + bassEnergy * 80).toString(16).padStart(2, '0')}`);
+      ctx.fillStyle = floor;
+      ctx.fillRect(0, baseY - height * 0.12, width, height * 0.16);
+
+      ctx.beginPath();
+      const caps = [];
+      for (let i = 0; i < bars; i++) {
+        const v = shapeBar(sampleSpectrum(i / (bars - 1)), reactivity);
+        const h = Math.max(height * 0.004, v * maxH);
+        const x = i * slot + (slot - barW) / 2;
+        ctx.rect(x, baseY - h, barW, h);
+
+        if (infernoPeaks[i] === undefined || v > infernoPeaks[i]) infernoPeaks[i] = v;
+        else infernoPeaks[i] = Math.max(0, infernoPeaks[i] - 0.006);
+        caps.push([x, baseY - Math.max(h, infernoPeaks[i] * maxH) - height * 0.008]);
+      }
+      ctx.shadowBlur = glowAmt;
+      ctx.shadowColor = palette.secondary;
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Peak-hold caps
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = palette.accent;
+      ctx.globalAlpha = 0.85;
+      const capH = Math.max(2, height * 0.004);
+      for (const [x, y] of caps) ctx.fillRect(x, y, barW, capH);
+      ctx.globalAlpha = 1;
+    }
+
+    // --- Mode 10: Spiral Burst (two counter-rotating rings of curved spectrum bars) ---
+    function drawSpiralBurst(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      const cx = width / 2;
+      const cy = height / 2;
+      const unit = Math.min(width, height);
+      const t = performance.now() / 1000;
+      const r0 = unit * (0.11 + bassEnergy * 0.025);
+
+      const layers = [
+        { n: 96, r: r0 * 1.5, maxLen: unit * 0.2, rot: t * 0.2, twist: 0.25, color: palette.primary, alpha: 1 },
+        { n: 72, r: r0, maxLen: unit * 0.1, rot: -t * 0.35, twist: -0.35, color: palette.primary, alpha: 0.75 }
+      ];
+
+      ctx.lineCap = 'round';
+      ctx.shadowBlur = glowAmt;
+      ctx.shadowColor = palette.primary;
+      for (const L of layers) {
+        ctx.beginPath();
+        for (let i = 0; i < L.n; i++) {
+          const s = i / L.n;
+          const d = s < 0.5 ? s * 2 : (1 - s) * 2; // mirrored so the ring is seamless
+          const v = shapeBar(sampleSpectrum(d * 0.85), reactivity);
+          const len = Math.max(unit * 0.008, v * L.maxLen);
+          const a1 = L.rot + s * Math.PI * 2;
+          const a2 = a1 + L.twist * (len / L.maxLen);
+          ctx.moveTo(cx + Math.cos(a1) * L.r, cy + Math.sin(a1) * L.r);
+          ctx.lineTo(cx + Math.cos(a2) * (L.r + len), cy + Math.sin(a2) * (L.r + len));
+        }
+        ctx.lineWidth = Math.max(2, ((Math.PI * 2 * L.r) / L.n) * 0.45);
+        ctx.strokeStyle = L.color;
+        ctx.globalAlpha = L.alpha;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    }
+
+    // --- Mode 11: VU Meter (analog needle gauge with realistic ballistics) ---
+    const vuState = { level: -20, peakUntil: 0 };
+    const VU_MIN = -20, VU_MAX = 3;
+    const vuPos = (vu) => {
+      // Real VU scales are linear in voltage, so the dB marks bunch up toward the top end
+      const lo = Math.pow(10, VU_MIN / 20), hi = Math.pow(10, VU_MAX / 20);
+      return (Math.pow(10, vu / 20) - lo) / (hi - lo);
+    };
+
+    function drawVuMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+      // RMS loudness from the time-domain waveform
+      let target = VU_MIN - 2;
+      if (state.audio.isPlaying && dataTimeDomainArray) {
+        let sum = 0;
+        for (let i = 0; i < dataTimeDomainArray.length; i++) {
+          const s = (dataTimeDomainArray[i] - 128) / 128;
+          sum += s * s;
+        }
+        const rms = Math.sqrt(sum / dataTimeDomainArray.length);
+        // 0 VU calibrated at -9 dBFS RMS (typical modern master); the reactivity slider acts as
+        // input gain relative to its 1.4x default
+        target = 20 * Math.log10(Math.max(rms, 1e-5)) + 9 + 20 * Math.log10(Math.max(0.1, reactivity) / 1.4);
+      }
+      target = Math.max(VU_MIN - 2, Math.min(VU_MAX + 1, target));
+      vuState.level += (target - vuState.level) * (target > vuState.level ? 0.3 : 0.07);
+      const now = performance.now();
+      if (vuState.level > 0) vuState.peakUntil = now + 400;
+
+      const unit = Math.min(width, height);
+      const px = width / 2;
+      const py = height / 2 + unit * 0.22;
+      const R = unit * 0.42;
+      const A = (50 * Math.PI) / 180;
+      const angleFor = (vu) => -A + Math.max(-0.03, Math.min(1.04, vuPos(vu))) * 2 * A;
+      const pt = (ang, r) => [px + Math.sin(ang) * r, py - Math.cos(ang) * r];
+      const arc = (r, a1, a2) => {
+        ctx.beginPath();
+        ctx.arc(px, py, r, a1 - Math.PI / 2, a2 - Math.PI / 2);
+      };
+
+      // Scale arcs: normal zone + red zone above 0 VU
+      ctx.lineCap = 'butt';
+      ctx.shadowBlur = glowAmt * 0.6;
+      ctx.shadowColor = palette.primary;
+      ctx.strokeStyle = palette.primary;
+      ctx.lineWidth = Math.max(2, unit * 0.006);
+      arc(R, -A, angleFor(0));
+      ctx.stroke();
+      ctx.strokeStyle = '#ef4444';
+      ctx.shadowColor = '#ef4444';
+      ctx.lineWidth = Math.max(3, unit * 0.014);
+      arc(R + unit * 0.004, angleFor(0), A);
+      ctx.stroke();
+
+      // Ticks & labels
+      const fontPx = Math.round(unit * 0.03);
+      ctx.font = `600 ${fontPx}px Orbitron, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const marks = [-20, -15, -10, -7, -5, -4, -3, -2, -1, 0, 1, 2, 3];
+      const labelled = { '-20': '20', '-10': '10', '-7': '7', '-5': '5', '-3': '3', '0': '0', '3': '+3' };
+      for (const m of marks) {
+        const ang = angleFor(m);
+        const major = labelled[m] !== undefined;
+        const [x1, y1] = pt(ang, R);
+        const [x2, y2] = pt(ang, R + unit * (major ? 0.045 : 0.028));
+        ctx.strokeStyle = m > 0 ? '#ef4444' : palette.primary;
+        ctx.lineWidth = Math.max(1.5, unit * (major ? 0.004 : 0.0025));
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        if (major) {
+          const [lx, ly] = pt(ang, R + unit * 0.08);
+          ctx.fillStyle = m > 0 ? '#f87171' : palette.primary;
+          ctx.shadowBlur = 0;
+          ctx.fillText(labelled[m], lx, ly);
+          ctx.shadowBlur = glowAmt * 0.6;
+        }
+      }
+
+      // "VU" legend and peak lamp
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = `${palette.primary}cc`;
+      ctx.font = `700 ${Math.round(unit * 0.045)}px Orbitron, sans-serif`;
+      ctx.fillText('VU', px, py - R * 0.42);
+      const peakOn = now < vuState.peakUntil;
+      const [lampX, lampY] = pt(A + 0.12, R * 0.78);
+      ctx.fillStyle = peakOn ? '#ef4444' : '#3f1d1d';
+      ctx.shadowBlur = peakOn ? glowAmt * 1.5 : 0;
+      ctx.shadowColor = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(lampX, lampY, unit * 0.014, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Needle
+      const needleAng = angleFor(vuState.level);
+      const [nx, ny] = pt(needleAng, R * 1.04);
+      ctx.strokeStyle = palette.secondary;
+      ctx.shadowColor = palette.secondary;
+      ctx.shadowBlur = glowAmt;
+      ctx.lineCap = 'round';
+      ctx.lineWidth = Math.max(2, unit * 0.006);
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+
+      // Glowing pivot
+      ctx.fillStyle = palette.primary;
+      ctx.shadowColor = palette.primary;
+      ctx.shadowBlur = glowAmt * 1.5;
+      ctx.beginPath();
+      ctx.arc(px, py, unit * (0.026 + bassEnergy * 0.006), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
 
     // --- Floating Particles Overlay Renderer ---

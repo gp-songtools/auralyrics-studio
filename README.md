@@ -12,7 +12,7 @@ A single-file, zero-backend browser web application for uploading music creation
   - **Align to Your Lyrics**: Both Whisper modes can keep the lyric lines you pasted into the editor and use the transcription only for timing (fuzzy word alignment, with unmatched lines interpolated).
   - **Live Browser Listener**: Real-time Web Speech API listener.
   - **Tap-to-Sync Assistant**: Stamp lyric lines on the beat using the `S` or `T` key (leaving `Spacebar` dedicated to Play/Pause), plus full-song stretching and `-1s` / `+1s` offset buttons.
-- **6 Reactive Visualizer Modes**: Radial Spectrum, Cyber Skyline Equalizer, Neon Oscilloscope Waveform, Cosmic Vortex, Aurora Ribbons, and Dual Infinity.
+- **11 Reactive Visualizer Modes**: Radial Spectrum, Cyber Skyline Equalizer, Neon Oscilloscope Waveform, Cosmic Vortex, Aurora Ribbons, Dual Infinity, Pulse Rings (bass-reactive core with beat shockwaves), Mirror Bars, Inferno Spectrum, Spiral Burst, and an analog VU Meter.
 - **Layered Visual Overlays**:
   - **Rotating Vinyl Turntable**: Spinning vinyl platter with concentric grooves, specular sheen, and circular-clipped custom cover art upload.
   - **Floating Particles Overlay**: Bass-reactive Bokeh Orbs, Neon Embers, Musical Notes, and Diamond Stardust.
