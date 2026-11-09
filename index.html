@@ -366,10 +366,14 @@
 
             <!-- Layout Editor Toggle -->
             <button id="btnEditLayout" class="flex items-center space-x-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700 transition" title="Move &amp; resize the visualizer, turntable and lyrics (L)">
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg id="iconEditLayoutPreview" class="hidden w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <svg id="iconEditLayoutGrid" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm9 0a1 1 0 011-1h5a1 1 0 011 1v2a1 1 0 01-1 1h-5a1 1 0 01-1-1V5zm0 7a1 1 0 011-1h5a1 1 0 011 1v7a1 1 0 01-1 1h-5a1 1 0 01-1-1v-7zM4 15a1 1 0 011-1h5a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
               </svg>
-              <span id="labelEditLayout">Layout</span>
+              <span id="labelEditLayout">Edit Layout</span>
             </button>
 
             <!-- Fullscreen Button -->
@@ -413,8 +417,8 @@
           <span class="flex-1"></span>
           <button id="btnLayoutResetLayer" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reset the selected layer to its default position &amp; size">Reset</button>
           <button id="btnLayoutResetAll" class="whitespace-nowrap px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Reset All</button>
-          <button id="btnLayoutDone" class="px-2.5 py-1 rounded-lg bg-pink-500 hover:bg-pink-600 text-white font-semibold transition">Done</button>
-          <p class="w-full text-[10px] text-slate-500">Drag to move &middot; handles resize &middot; Shift keeps proportions &middot; Alt disables snapping &middot; arrow keys nudge &middot; double-click resets &middot; Esc to finish</p>
+          <button id="btnLayoutDone" class="px-2.5 py-1 rounded-lg bg-pink-500 hover:bg-pink-600 text-white font-semibold transition">Preview</button>
+          <p class="w-full text-[10px] text-slate-500">Drag to move &middot; handles resize &middot; Shift keeps proportions &middot; Alt disables snapping &middot; arrow keys nudge &middot; double-click resets &middot; L or Esc for a clean preview</p>
         </div>
 
         <!-- Integrated Transport Bar -->
@@ -504,6 +508,8 @@
             </svg>
             <span>Video Export Studio</span>
           </button>
+          <span class="flex-1"></span>
+          <button id="btnResetSettings" class="pb-1.5 text-[10px] font-medium text-slate-500 hover:text-slate-300 transition" title="Settings are saved in this browser automatically">Reset settings</button>
         </div>
 
         <!-- Section 1: Visualizer Engine Styling -->
@@ -2565,12 +2571,15 @@
 
     // var (not let) so renderFrame can read it safely before this block has run
     var layoutEditing = false;
+    let editingBeforeRecording = false;
     let selectedLayer = 'visualizer';
     let layoutDrag = null;
     const layoutEditor = document.getElementById('layoutEditor');
     const layoutToolbar = document.getElementById('layoutToolbar');
     const btnEditLayout = document.getElementById('btnEditLayout');
     const labelEditLayout = document.getElementById('labelEditLayout');
+    const iconEditLayoutGrid = document.getElementById('iconEditLayoutGrid');
+    const iconEditLayoutPreview = document.getElementById('iconEditLayoutPreview');
     const layoutBoxes = {};
     const guideV = document.createElement('div');
     const guideH = document.createElement('div');
@@ -2631,10 +2640,14 @@
       layoutEditor.classList.toggle('hidden', !on);
       layoutToolbar.classList.toggle('hidden', !on);
       canvasViewportWrapper.classList.toggle('layout-editing', on);
-      labelEditLayout.textContent = on ? 'Done' : 'Layout';
-      btnEditLayout.classList.toggle('bg-pink-500', on);
-      btnEditLayout.classList.toggle('text-white', on);
-      btnEditLayout.classList.toggle('border-pink-500', on);
+      // Editing is the default mode; the button offers the clean preview (and back)
+      labelEditLayout.textContent = on ? 'Preview' : 'Edit Layout';
+      iconEditLayoutPreview.classList.toggle('hidden', !on);
+      iconEditLayoutGrid.classList.toggle('hidden', on);
+      btnEditLayout.title = on ? 'Hide the layout boxes and watch a clean preview (L)' : 'Move & resize the visualizer, turntable and lyrics (L)';
+      btnEditLayout.classList.toggle('bg-pink-500', !on);
+      btnEditLayout.classList.toggle('text-white', !on);
+      btnEditLayout.classList.toggle('border-pink-500', !on);
       if (on) syncLayoutEditor();
     }
 
@@ -2647,6 +2660,7 @@
     function resetLayer(name) {
       state.visualizer.layers[name] = null;
       syncLayoutEditor();
+      scheduleSettingsSave();
     }
 
     btnEditLayout.addEventListener('click', () => setLayoutEditing(!layoutEditing));
@@ -2747,6 +2761,7 @@
     });
 
     const endLayoutDrag = () => {
+      if (layoutDrag) scheduleSettingsSave();
       layoutDrag = null;
       showGuide(guideV, null, true);
       showGuide(guideH, null, false);
@@ -2766,6 +2781,7 @@
       b.y = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - b.h, b.y + dy));
       state.visualizer.layers[selectedLayer] = b;
       syncLayoutEditor();
+      scheduleSettingsSave();
     }
 
     // --- CANVAS VISUALIZER RENDERING ENGINE ---
@@ -4089,6 +4105,8 @@
         }
 
         state.export.isRecording = true;
+        editingBeforeRecording = layoutEditing;
+        if (layoutEditing) setLayoutEditing(false);
         state.export.recordStartRealtime = Date.now();
         state.export.mediaRecorder.start(250); // Slice every 250ms
 
@@ -4115,6 +4133,8 @@
     function stopVideoRecording() {
       if (!state.export.isRecording || !state.export.mediaRecorder) return;
       state.export.isRecording = false;
+      if (editingBeforeRecording) setLayoutEditing(true);
+      editingBeforeRecording = false;
 
       if (state.export.mediaRecorder.state !== 'inactive') {
         state.export.mediaRecorder.stop();
@@ -4914,6 +4934,138 @@
       }
     }
     btnToggleLiveSpeech.addEventListener('click', toggleLiveSpeechListening);
+
+    // --- PERSISTED SETTINGS (localStorage) ---
+    // Controls are restored by setting their value and firing their own events, so every existing
+    // handler updates state, labels and the canvas exactly as if the user had changed them.
+    const SETTINGS_KEY = 'aura_settings_v1';
+    const COVER_ART_KEY = 'aura_cover_art_v1';
+    const PERSISTED_CONTROL_IDS = [
+      'selectColorTheme', 'selectBgStyle', 'sliderReactivity', 'sliderGlow', 'sliderSmoothing', 'sliderVizOpacity',
+      'checkFloatingParticles', 'selectParticleStyle', 'sliderParticleDensity',
+      'checkTurntable', 'sliderTurntableSpeed', 'sliderTurntableSize',
+      'selectLyricLayout', 'selectLyricFont', 'sliderLyricSize', 'sliderLyricPos',
+      'colorLyricFont', 'colorLyricHighlight', 'colorLyricSecondary', 'checkBassBounce', 'checkBackdropPill',
+      'exportFormat', 'exportResolution', 'exportFps', 'exportRange', 'volumeSlider'
+    ];
+    let settingsRestoring = false;
+    let settingsSaveTimer = null;
+
+    function saveSettingsNow() {
+      if (settingsRestoring) return;
+      const controls = {};
+      for (const id of PERSISTED_CONTROL_IDS) {
+        const el = document.getElementById(id);
+        if (el) controls[id] = el.type === 'checkbox' ? el.checked : el.value;
+      }
+      const data = { v: 1, controls, mode: state.visualizer.mode, layers: state.visualizer.layers };
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(data)); } catch (e) {}
+    }
+
+    function scheduleSettingsSave() {
+      if (settingsRestoring) return;
+      clearTimeout(settingsSaveTimer);
+      settingsSaveTimer = setTimeout(saveSettingsNow, 250);
+    }
+
+    function validLayerBox(b) {
+      return b && ['x', 'y', 'w', 'h'].every(k => typeof b[k] === 'number' && isFinite(b[k])) && b.w > 0 && b.h > 0;
+    }
+
+    function restoreSettings() {
+      let data = null;
+      try { data = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch (e) {}
+      if (!data || data.v !== 1) return;
+      settingsRestoring = true;
+      try {
+        for (const [id, val] of Object.entries(data.controls || {})) {
+          const el = document.getElementById(id);
+          if (!el || !PERSISTED_CONTROL_IDS.includes(id)) continue;
+          if (el.type === 'checkbox') el.checked = !!val;
+          else if (el.tagName === 'SELECT') {
+            if (![...el.options].some(o => o.value === val)) continue;
+            el.value = val;
+          } else el.value = val;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        const modeBtn = data.mode && document.querySelector(`.viz-mode-btn[data-mode="${CSS.escape(data.mode)}"]`);
+        if (modeBtn) modeBtn.click();
+        for (const name of Object.keys(LAYOUT_LAYERS)) {
+          const b = data.layers && data.layers[name];
+          state.visualizer.layers[name] = validLayerBox(b) ? { x: b.x, y: b.y, w: b.w, h: b.h } : null;
+        }
+      } finally {
+        settingsRestoring = false;
+      }
+
+      // Custom turntable cover art (stored separately as a downscaled image)
+      let art = null;
+      try { art = localStorage.getItem(COVER_ART_KEY); } catch (e) {}
+      if (art) {
+        const img = new Image();
+        img.onload = () => {
+          state.visualizer.turntableImage = img;
+          btnClearTurntableImg.classList.remove('hidden');
+        };
+        img.src = art;
+      }
+    }
+
+    function saveCoverArt(img) {
+      try {
+        if (!img) { localStorage.removeItem(COVER_ART_KEY); return; }
+        const max = 600;
+        const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        localStorage.setItem(COVER_ART_KEY, c.toDataURL('image/webp', 0.9));
+      } catch (e) {
+        console.warn('Cover art could not be saved for next visit:', e);
+      }
+    }
+
+    // Save whenever a settings control, mode button, colour preset or the volume changes
+    for (const id of PERSISTED_CONTROL_IDS) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', scheduleSettingsSave);
+        el.addEventListener('change', scheduleSettingsSave);
+      }
+    }
+    document.getElementById('configPane').addEventListener('click', (e) => {
+      if (e.target.closest('.viz-mode-btn, [data-fontcol]')) scheduleSettingsSave();
+    });
+    turntableImgInput.addEventListener('change', () => {
+      // The existing handler loads the image asynchronously; persist it once it is ready
+      const file = turntableImgInput.files[0];
+      if (!file) return;
+      const t0 = performance.now();
+      const wait = () => {
+        const img = state.visualizer.turntableImage;
+        if (img && img.src && img.src.startsWith('data:') && img.complete) { saveCoverArt(img); scheduleSettingsSave(); }
+        else if (performance.now() - t0 < 10000) setTimeout(wait, 150);
+      };
+      setTimeout(wait, 150);
+    });
+    btnClearTurntableImg.addEventListener('click', () => saveCoverArt(null));
+
+    document.getElementById('btnResetSettings').addEventListener('click', () => {
+      if (!confirm('Reset all visualizer, lyric, layout and export settings to their defaults?')) return;
+      try {
+        localStorage.removeItem(SETTINGS_KEY);
+        localStorage.removeItem(COVER_ART_KEY);
+      } catch (e) {}
+      settingsRestoring = true; // don't re-save the current values while reloading
+      location.reload();
+    });
+    window.addEventListener('beforeunload', () => { if (settingsSaveTimer) saveSettingsNow(); });
+
+    restoreSettings();
+    // Layout editing is the default working mode; the toggle switches to a clean preview
+    setLayoutEditing(true);
 
     // Initial setup on window load
     window.addEventListener('load', () => {
