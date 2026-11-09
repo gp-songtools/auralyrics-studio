@@ -14,6 +14,10 @@ All notable changes to AuraLyrics Studio, newest first. The app has no version n
 - Your Groq or OpenAI key is no longer saved automatically. Unless you tick Remember, it is forgotten when you close the tab. If you saved a key before this change, it stays saved and the box shows ticked.
 - AuraLyrics Studio now counts visits with Cloudflare Web Analytics: anonymous totals only, with no cookies. It never sees your audio, lyrics, videos or key. The Privacy & credits page explains what it reports.
 
+### Fixed
+
+- On phones, the page no longer scrolls sideways. The Demo Song and Export Video buttons at the top now show just their icons on narrow screens.
+
 ## 2026-11-09 — First release
 
 ### Added
