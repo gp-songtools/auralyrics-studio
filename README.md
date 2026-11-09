@@ -23,6 +23,10 @@ A single-file, zero-backend browser web application for uploading music creation
 - **Lyric Typography & Color Studio**: 4 display layouts (Kinetic Spotlight, Lower-Third Subtitle, Rolling Teleprompter, Karaoke Wipe), 5 Google Fonts, and custom pickers/presets for active font color, glow color, and upcoming/past line color.
 - **Direct Video Export (`.mp4` / `.webm`)**: Records the HTML5 `<canvas>` stream (`captureStream`) merged with the Web Audio `MediaStreamDestination` at 1080p (16:9), 720p (16:9), Square (1:1), or Vertical (9:16) at 30 or 60 FPS.
 
+## Privacy & credits
+
+No server or account of its own. Audio, video export and in-browser Whisper all run on your device; cloud transcription sends the audio (16 kHz mono) only to Groq or OpenAI under your own key. The key is kept in memory and forgotten when you close the tab unless you tick **Remember key on this device** (off by default). Pages load Cloudflare Web Analytics, shared by all GP Song Tools, for anonymous visit counts (no cookies; it never sees your audio, lyrics, videos or key). Details and credits: [Privacy & credits](https://gp-songtools.github.io/toolsmenu/privacy.html). Live at https://gp-songtools.github.io/auralyrics-studio/ · changes in [CHANGELOG.md](CHANGELOG.md).
+
 ## Running Locally
 
 Because the entire app is self-contained inside `index.html`:
