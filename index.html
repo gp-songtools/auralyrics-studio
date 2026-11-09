@@ -53,6 +53,31 @@
     .pulse-record {
       animation: pulse-red 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+    /* Desktop split layout: page locked to the viewport, video pane fixed,
+       settings below it and the left setup column scroll independently */
+    @media (min-width: 1024px) {
+      body { height: 100vh; overflow: hidden; }
+      #appMain { min-height: 0; grid-template-rows: minmax(0, 1fr); }
+      #setupColumn { min-height: 0; overflow-y: auto; padding-right: 4px; }
+      #studioColumn { min-height: 0; overflow: hidden; }
+      #previewPane { flex-shrink: 0; }
+      #configPane { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-top: 0; }
+      /* Keep the Visualizer / Lyrics / Export tab bar pinned while settings scroll */
+      #configPane > :first-child {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding-top: 16px;
+        background: #0d1424;
+      }
+      /* Cap the preview height so the settings pane keeps usable room on shorter screens */
+      #canvasViewportWrapper {
+        max-width: calc(max(220px, min(50vh, 100vh - 540px)) * 16 / 9);
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+    #canvasViewportWrapper:fullscreen { max-width: none; }
     @keyframes pulse-red {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(1.15); }
@@ -106,10 +131,10 @@
   </header>
 
   <!-- Main Layout Grid -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+  <main id="appMain" class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
     
     <!-- Left Column: Audio & Lyrics Setup (5 cols on lg) -->
-    <div class="lg:col-span-5 flex flex-col space-y-4">
+    <div id="setupColumn" class="lg:col-span-5 flex flex-col space-y-4">
       
       <!-- Audio Source Card -->
       <div class="glass-panel rounded-2xl p-4 shadow-xl">
@@ -281,10 +306,10 @@
     </div>
 
     <!-- Center & Right Columns: Visualizer Viewport + Controls & Export (7 cols on lg) -->
-    <div class="lg:col-span-7 flex flex-col space-y-4">
+    <div id="studioColumn" class="lg:col-span-7 flex flex-col space-y-4">
       
       <!-- Video Preview Canvas Container -->
-      <div class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col">
+      <div id="previewPane" class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col">
         <div class="flex items-center justify-between mb-2.5">
           <div class="flex items-center space-x-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -397,7 +422,7 @@
       </div>
 
       <!-- Customization Tabs: Visualizer Style / Lyrics Style / Video Export -->
-      <div class="glass-panel rounded-2xl p-4 shadow-xl">
+      <div id="configPane" class="glass-panel rounded-2xl p-4 shadow-xl">
         <div class="border-b border-slate-800 pb-2 mb-4 flex space-x-3 text-xs font-semibold">
           <button id="tabNavVisuals" class="pb-1.5 border-b-2 border-pink-500 text-pink-400 transition flex items-center space-x-1.5">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
