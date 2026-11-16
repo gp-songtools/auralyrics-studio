@@ -85,7 +85,7 @@
 
     /* Layout editor: on-screen boxes for moving / resizing layers (never drawn into the video) */
     #layoutEditor { position: absolute; z-index: 20; }
-    .layout-editing #canvasPlayOverlay { display: none; }
+    .layout-editing #canvasPlayOverlay, .offline-rendering #canvasPlayOverlay { display: none; }
     .layout-box {
       position: absolute; box-sizing: border-box; border: 2px dashed var(--c);
       border-radius: 6px; pointer-events: none; opacity: 0.55;
@@ -937,9 +937,9 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-xs font-bold text-white">Browser-Based Realtime Video Render Engine</h3>
+                <h3 class="text-xs font-bold text-white">Browser-Based Video Render Engine</h3>
                 <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
-                  Generates an integrated video recording syncing the audio waveform canvas + your embedded lyrics in high resolution. Click <strong class="text-pink-400">"Start Video Recording"</strong>, let the app play through your song, and download the finished video file.
+                  Turns your visualizer, lyrics and song into a high-resolution video file. With <strong class="text-emerald-400">Fast render</strong> (Chrome and Edge) every frame is rendered faster than real time with nothing dropped; otherwise the app plays your song through once while it records. Then download the finished file.
                 </p>
               </div>
             </div>
@@ -952,6 +952,7 @@
                 <option value="mp4" selected>MP4 Video (.mp4)</option>
                 <option value="webm">WebM Video (.webm)</option>
               </select>
+              <p id="exportPathNote" class="mt-1 text-[10px] font-semibold text-slate-500">Checking export method…</p>
             </div>
 
             <div>
@@ -988,6 +989,11 @@
             <button id="btnStartRecording" class="w-full sm:flex-1 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg shadow-pink-500/30 transition flex items-center justify-center space-x-2">
               <span class="w-3 h-3 rounded-full bg-white"></span>
               <span id="recBtnLabel">Start Video Recording</span>
+            </button>
+
+            <button id="btnCancelExport" class="hidden w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition items-center justify-center space-x-2 disabled:opacity-50">
+              <span class="w-3 h-3 rounded-sm bg-slate-400"></span>
+              <span>Cancel</span>
             </button>
 
             <button id="btnStopRecording" class="w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition hidden items-center justify-center space-x-2">
@@ -1346,6 +1352,8 @@
         startTime: 0,
         recordElapsed: 0,
         mediaRecorder: null,
+        offlineRendering: false, // true while the fast exporter owns the canvas
+        offlineJob: null,
         chunks: [],
         videoBlob: null,
         videoUrl: null
@@ -1406,35 +1414,66 @@
     let dataFrequencyArray = null;
     let dataTimeDomainArray = null;
 
+    // --- Deterministic animation clock & seeded randomness ---
+    // Every animation advances from frameClock (set once per frame by the live preview loop or the
+    // offline exporter), never from the wall clock, so an export renders identically every time.
+    //   t        seconds of animation time   dt   seconds since the previous frame
+    //   songTime position in the song        playing  whether audio data is live
+    const frameClock = { t: 0, dt: 1 / 60, songTime: 0, playing: false };
+    // Per-frame amounts below were tuned at 60 fps; these helpers keep them rate-independent.
+    const frameScale = () => frameClock.dt * 60;
+    const easeK = (k60) => 1 - Math.pow(1 - k60, frameClock.dt * 60);
+
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function () {
+        a = (a + 0x6D2B79F5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const ANIMATION_SEED = 20261116;
+    let rng = mulberry32(ANIMATION_SEED);
+
     // --- Starfield Particle System ---
     const starfield = [];
     const NUM_STARS = 260;
-    for (let i = 0; i < NUM_STARS; i++) {
-      starfield.push({
-        x: (Math.random() - 0.5) * 2000,
-        y: (Math.random() - 0.5) * 2000,
-        z: Math.random() * 1000 + 1,
-        size: Math.random() * 1.8 + 0.5,
-        color: Math.random() > 0.6 ? '#06b6d4' : (Math.random() > 0.5 ? '#f43f5e' : '#ffffff')
-      });
+    function initStarfield() {
+      starfield.length = 0;
+      for (let i = 0; i < NUM_STARS; i++) {
+        starfield.push({
+          x: (rng() - 0.5) * 2000,
+          y: (rng() - 0.5) * 2000,
+          z: rng() * 1000 + 1,
+          size: rng() * 1.8 + 0.5,
+          color: rng() > 0.6 ? '#06b6d4' : (rng() > 0.5 ? '#f43f5e' : '#ffffff')
+        });
+      }
     }
 
     // --- Floating Ambient Particles System ---
     const ambientParticles = [];
     const NOTE_SYMBOLS = ['♪', '♫', '♬', '♩'];
-    for (let i = 0; i < 100; i++) {
-      ambientParticles.push({
-        x: Math.random(),
-        y: Math.random(),
-        vx: (Math.random() - 0.5) * 0.0012,
-        vy: -(Math.random() * 0.0015 + 0.0005),
-        radius: Math.random() * 4.5 + 1.5,
-        alpha: Math.random() * 0.65 + 0.2,
-        phase: Math.random() * Math.PI * 2,
-        symbol: NOTE_SYMBOLS[i % NOTE_SYMBOLS.length],
-        colorMix: Math.random()
-      });
+    function initAmbientParticles() {
+      ambientParticles.length = 0;
+      for (let i = 0; i < 100; i++) {
+        ambientParticles.push({
+          x: rng(),
+          y: rng(),
+          vx: (rng() - 0.5) * 0.0012,
+          vy: -(rng() * 0.0015 + 0.0005),
+          radius: rng() * 4.5 + 1.5,
+          alpha: rng() * 0.65 + 0.2,
+          phase: rng() * Math.PI * 2,
+          symbol: NOTE_SYMBOLS[i % NOTE_SYMBOLS.length],
+          colorMix: rng()
+        });
+      }
     }
+    initStarfield();
+    initAmbientParticles();
 
     // --- DOM Elements ---
     const audioPlayer = document.getElementById('audioPlayer');
@@ -1969,6 +2008,7 @@
 
     // --- Playback Controls ---
     function togglePlay() {
+      if (state.export.offlineJob) return; // the canvas is busy rendering an export
       if (!state.audio.isLoaded) {
         showToast('Please upload an audio track or click "Demo Song" first!', 'info');
         return;
@@ -3164,9 +3204,72 @@
 
     // --- CANVAS VISUALIZER RENDERING ENGINE ---
     let animationFrameId = null;
+    let liveClockT = 0;
+    let liveLastNow = 0;
 
+    // Live preview loop: pulls audio data from the AnalyserNode and the time from the audio element,
+    // then draws one frame through drawScene(). The offline exporter calls drawScene() itself.
     function renderFrame() {
       animationFrameId = requestAnimationFrame(renderFrame);
+      if (state.export.offlineRendering) return; // the exporter owns the canvas while rendering
+
+      const nowSec = performance.now() / 1000;
+      const dt = liveLastNow ? Math.min(0.1, Math.max(0, nowSec - liveLastNow)) : 1 / 60;
+      liveLastNow = nowSec;
+      liveClockT += dt;
+
+      const playing = !!(analyserNode && state.audio.isPlaying);
+      if (playing) {
+        analyserNode.getByteFrequencyData(dataFrequencyArray);
+        analyserNode.getByteTimeDomainData(dataTimeDomainArray);
+      }
+      drawScene({ t: liveClockT, dt, songTime: audioPlayer.currentTime || 0, playing });
+
+      // Keep the on-screen layout editor aligned with the picture while editing
+      if (layoutEditing) syncLayoutEditor();
+
+      // Update Recording HUD Timer if recording
+      if (state.export.isRecording) {
+        state.export.recordElapsed = (Date.now() - state.export.recordStartRealtime) / 1000;
+        recLiveTimer.textContent = formatTime(state.export.recordElapsed);
+      }
+    }
+
+    // Makes sure the shared frequency / waveform arrays exist (they are sized by the analyser)
+    function ensureAudioDataArrays(binCount) {
+      if (!dataFrequencyArray || dataFrequencyArray.length !== binCount) dataFrequencyArray = new Uint8Array(binCount);
+      if (!dataTimeDomainArray || dataTimeDomainArray.length !== binCount) dataTimeDomainArray = new Uint8Array(binCount);
+    }
+
+    // Resets every stateful animation (starfield, particles, envelopes, peaks, spin) and the random
+    // seed, so a render started from here is identical every time.
+    function resetAnimationState() {
+      rng = mulberry32(ANIMATION_SEED);
+      initStarfield();
+      initAmbientParticles();
+      Object.assign(pulseRingState, { level: 0, floor: 1, ceil: 0, prevNorm: 0, lastHit: -Infinity, waves: [] });
+      infernoPeaks.length = 0;
+      ledPeaks = [];
+      dotLevels = [];
+      vuState.level = -20;
+      vuState.peakUntil = 0;
+      state.visualizer.turntableAngle = 0;
+    }
+
+    // Draws one complete frame. `frame` = { t, dt, songTime, playing, freq?, time? }.
+    // Audio data comes from dataFrequencyArray / dataTimeDomainArray, which the live loop fills from
+    // the AnalyserNode and the exporter fills from its offline analysis (freq / time).
+    function drawScene(frame) {
+      frameClock.t = frame.t;
+      frameClock.dt = frame.dt;
+      frameClock.songTime = frame.songTime;
+      frameClock.playing = frame.playing;
+      if (frame.freq) {
+        ensureAudioDataArrays(frame.freq.length);
+        dataFrequencyArray.set(frame.freq);
+        dataTimeDomainArray.set(frame.time);
+      }
+      updateCurrentLyricIndex(frame.songTime);
 
       const width = visualizerCanvas.width;
       const height = visualizerCanvas.height;
@@ -3177,10 +3280,7 @@
       let midEnergy = 0;
       let trebleEnergy = 0;
 
-      if (analyserNode && state.audio.isPlaying) {
-        analyserNode.getByteFrequencyData(dataFrequencyArray);
-        analyserNode.getByteTimeDomainData(dataTimeDomainArray);
-
+      if (frame.playing && dataFrequencyArray) {
         // Calculate average energies for bass (bins 0-15), mids (bins 16-80), highs (bins 81-200)
         let bSum = 0, mSum = 0, tSum = 0;
         for (let i = 0; i < 16; i++) bSum += dataFrequencyArray[i];
@@ -3192,7 +3292,7 @@
         trebleEnergy = (tSum / 119) / 255;
       } else {
         // Idle ambient gentle wave
-        const idleTime = Date.now() * 0.002;
+        const idleTime = frameClock.t * 2;
         bassEnergy = 0.15 + Math.sin(idleTime) * 0.05;
         midEnergy = 0.1 + Math.cos(idleTime * 0.8) * 0.03;
         trebleEnergy = 0.05;
@@ -3284,15 +3384,6 @@
       ctx.translate(lRect.x, lRect.y);
       drawEmbeddedLyrics(ctx, lRect.w, lRect.h, palette, bassEnergy);
       ctx.restore();
-
-      // Keep the on-screen layout editor aligned with the picture while editing
-      if (layoutEditing) syncLayoutEditor();
-
-      // 4. Update Recording HUD Timer if recording
-      if (state.export.isRecording) {
-        state.export.recordElapsed = (Date.now() - state.export.recordStartRealtime) / 1000;
-        recLiveTimer.textContent = formatTime(state.export.recordElapsed);
-      }
     }
 
     // --- Background Renderer ---
@@ -3399,7 +3490,7 @@
       }
 
       // Warp speed on bass kicks
-      const speed = 2 + bassEnergy * 15;
+      const speed = (2 + bassEnergy * 15) * frameScale();
       const cx = width / 2;
       const cy = height / 2;
 
@@ -3407,8 +3498,8 @@
         star.z -= speed;
         if (star.z <= 0) {
           star.z = 1000;
-          star.x = (Math.random() - 0.5) * 2000;
-          star.y = (Math.random() - 0.5) * 2000;
+          star.x = (rng() - 0.5) * 2000;
+          star.y = (rng() - 0.5) * 2000;
         }
 
         const k = 250 / star.z;
@@ -3546,7 +3637,7 @@
         for (let i = 0; i < len; i++) {
           const v = dataTimeDomainArray ? (dataTimeDomainArray[i] / 128.0) : 1.0;
           const offset = (v - 1.0) * (height * 0.3) * layer.amp * (1 + bassEnergy * 0.5);
-          const y = cy + offset + Math.sin(i * 0.05 + Date.now() * 0.003 * (lIdx + 1)) * 10;
+          const y = cy + offset + Math.sin(i * 0.05 + frameClock.t * 3 * (lIdx + 1)) * 10;
 
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
@@ -3561,7 +3652,7 @@
       const cx = width / 2;
       const cy = height / 2;
       const rings = 8;
-      const time = Date.now() * 0.0015;
+      const time = frameClock.t * 1.5;
 
       ctx.shadowBlur = glowAmt;
       ctx.shadowColor = palette.primary;
@@ -3589,7 +3680,7 @@
 
     // --- Mode 5: Aurora Ribbons ---
     function drawAuroraRibbons(ctx, width, height, palette, bassEnergy, midEnergy, glowAmt) {
-      const time = Date.now() * 0.001;
+      const time = frameClock.t;
       ctx.shadowBlur = glowAmt;
       ctx.shadowColor = palette.primary;
 
@@ -3636,7 +3727,7 @@
         // Pulsing radial spikes
         const spikes = 32;
         for (let s = 0; s < spikes; s++) {
-          const a = (s / spikes) * Math.PI * 2 + (idx === 0 ? Date.now() * 0.001 : -Date.now() * 0.001);
+          const a = (s / spikes) * Math.PI * 2 + (idx === 0 ? frameClock.t : -frameClock.t);
           const val = dataFrequencyArray ? dataFrequencyArray[s * 3] : 0;
           const len = 5 + (val / 255) * 45;
           ctx.beginPath();
@@ -3684,22 +3775,22 @@
       const cy = height / 2;
       const unit = Math.min(width, height);
       const st = pulseRingState;
-      const now = performance.now();
+      const now = frameClock.t * 1000;
 
       // Kick-drum band (~80-260 Hz), normalised against the track's own running floor/ceiling
       // so the core thumps on quiet mixes and brick-walled masters alike
       let norm;
       if (state.audio.isPlaying && dataFrequencyArray) {
         const kick = (dataFrequencyArray[1] + dataFrequencyArray[2] + dataFrequencyArray[3]) / (3 * 255);
-        st.floor = kick < st.floor ? kick : st.floor + (kick - st.floor) * 0.02;
-        st.ceil = kick > st.ceil ? kick : st.ceil - (st.ceil - kick) * 0.008;
+        st.floor = kick < st.floor ? kick : st.floor + (kick - st.floor) * easeK(0.02);
+        st.ceil = kick > st.ceil ? kick : st.ceil - (st.ceil - kick) * easeK(0.008);
         norm = Math.pow(Math.max(0, Math.min(1, (kick - st.floor) / Math.max(0.08, st.ceil - st.floor))), 1.5);
       } else {
         norm = 0.25 + Math.sin(now * 0.002) * 0.15; // idle breathing
       }
 
       // Fast attack / slower release so each kick reads as a visible thump
-      st.level += (norm - st.level) * (norm > st.level ? 0.65 : 0.12);
+      st.level += (norm - st.level) * easeK(norm > st.level ? 0.65 : 0.12);
       const lvl = Math.min(1.6, st.level * (reactivity / 1.4));
       const punch = lvl;
 
@@ -3742,8 +3833,8 @@
       ctx.shadowColor = palette.secondary;
       st.waves = st.waves.filter(w => w.alpha > 0.03);
       for (const w of st.waves) {
-        w.r += unit * 0.008;
-        w.alpha *= 0.94;
+        w.r += unit * 0.008 * frameScale();
+        w.alpha *= Math.pow(0.94, frameScale());
         ctx.globalAlpha = w.alpha;
         ctx.lineWidth = Math.max(1.5, unit * 0.003);
         ctx.beginPath();
@@ -3834,7 +3925,7 @@
         ctx.rect(x, baseY - h, barW, h);
 
         if (infernoPeaks[i] === undefined || v > infernoPeaks[i]) infernoPeaks[i] = v;
-        else infernoPeaks[i] = Math.max(0, infernoPeaks[i] - 0.006);
+        else infernoPeaks[i] = Math.max(0, infernoPeaks[i] - 0.006 * frameScale());
         caps.push([x, baseY - Math.max(h, infernoPeaks[i] * maxH) - height * 0.008]);
       }
       ctx.shadowBlur = glowAmt;
@@ -3856,7 +3947,7 @@
       const cx = width / 2;
       const cy = height / 2;
       const unit = Math.min(width, height);
-      const t = performance.now() / 1000;
+      const t = frameClock.t;
       const r0 = unit * (0.11 + bassEnergy * 0.025);
 
       const layers = [
@@ -3912,8 +4003,8 @@
         target = 20 * Math.log10(Math.max(rms, 1e-5)) + 9 + 20 * Math.log10(Math.max(0.1, reactivity) / 1.4);
       }
       target = Math.max(VU_MIN - 2, Math.min(VU_MAX + 1, target));
-      vuState.level += (target - vuState.level) * (target > vuState.level ? 0.3 : 0.07);
-      const now = performance.now();
+      vuState.level += (target - vuState.level) * easeK(target > vuState.level ? 0.3 : 0.07);
+      const now = frameClock.t * 1000;
       if (vuState.level > 0) vuState.peakUntil = now + 400;
 
       const unit = Math.min(width, height);
@@ -4024,7 +4115,7 @@
       for (let c = 0; c < cols; c++) {
         const v = shapeBar(sampleSpectrum(c / (cols - 1)), reactivity);
         const on = Math.round(v * rows);
-        ledPeaks[c] = Math.max(on, ledPeaks[c] - 0.12);
+        ledPeaks[c] = Math.max(on, ledPeaks[c] - 0.12 * frameScale());
         const peakRow = Math.round(ledPeaks[c]) - 1;
         const x = padX + c * cellW + gapX / 2;
         for (let r = 0; r < rows; r++) {
@@ -4075,7 +4166,7 @@
       const dots = new Path2D();
       for (let c = 0; c < cols; c++) {
         const v = shapeBar(sampleSpectrum(c / (cols - 1)), reactivity);
-        dotLevels[c] += (v - dotLevels[c]) * 0.35;
+        dotLevels[c] += (v - dotLevels[c]) * easeK(0.35);
         const x = padX + (c + 0.5) * slot;
         const y = bottom - dotLevels[c] * (bottom - top);
         dots.moveTo(x + radius, y);
@@ -4107,7 +4198,7 @@
     function drawFloatingParticles(ctx, width, height, palette, bassEnergy, midEnergy) {
       const count = state.visualizer.particleDensity || 45;
       const style = state.visualizer.particleStyle || 'orbs';
-      const speedMult = (state.visualizer.particleSpeed ?? 1) * (1 + bassEnergy * 3.5);
+      const speedMult = (state.visualizer.particleSpeed ?? 1) * (1 + bassEnergy * 3.5) * frameScale();
       const motion = state.visualizer.particleMotion || 'drift';
       const unit = Math.min(width, height);
       // Radial & swirl motions centre on the visualizer layer (follows the Layout editor)
@@ -4116,19 +4207,20 @@
       const cyN = (vRectP.y + vRectP.h / 2) / height;
       const ang = ((state.visualizer.particleDirection || 0) * Math.PI) / 180;
       const cosA = Math.cos(ang), sinA = Math.sin(ang);
-      const now = Date.now();
+      const now = frameClock.t * 1000;
+      const fs = frameScale();
 
       ctx.save();
       for (let i = 0; i < count && i < ambientParticles.length; i++) {
         const p = ambientParticles[i];
-        const wobble = Math.sin(now * 0.001 + p.phase) * 0.0005;
+        const wobble = Math.sin(now * 0.001 + p.phase) * 0.0005 * fs;
 
         if (motion === 'drift') {
           // Rotate each particle's own (mostly upward) velocity, so 0deg reproduces the original drift
           p.x += (p.vx * cosA - p.vy * sinA) * speedMult + wobble;
           p.y += (p.vx * sinA + p.vy * cosA) * speedMult;
-          if (p.y < -0.05) { p.y = 1.05; p.x = Math.random(); }
-          else if (p.y > 1.05) { p.y = -0.05; p.x = Math.random(); }
+          if (p.y < -0.05) { p.y = 1.05; p.x = rng(); }
+          else if (p.y > 1.05) { p.y = -0.05; p.x = rng(); }
           if (p.x < -0.05) p.x = 1.05;
           else if (p.x > 1.05) p.x = -0.05;
         } else {
@@ -4154,18 +4246,18 @@
           const sucked = (motion === 'implode' || motion === 'vortex') && r < 0.03;
           if (motion === 'burst' && outside) {
             // Re-emerge near the centre
-            const a = Math.random() * Math.PI * 2, rr = Math.random() * 0.08;
+            const a = rng() * Math.PI * 2, rr = rng() * 0.08;
             p.x = cxN + (Math.cos(a) * rr * unit) / width;
             p.y = cyN + (Math.sin(a) * rr * unit) / height;
           } else if (sucked || (outside && motion !== 'burst')) {
             if (motion === 'implode' || motion === 'vortex') {
               // Re-enter from a random frame edge
-              const side = Math.floor(Math.random() * 4), t = Math.random();
+              const side = Math.floor(rng() * 4), t = rng();
               p.x = side === 0 ? -0.02 : side === 1 ? 1.02 : t;
               p.y = side === 2 ? -0.02 : side === 3 ? 1.02 : t;
             } else {
-              p.x = Math.random();
-              p.y = Math.random();
+              p.x = rng();
+              p.y = rng();
             }
           }
         }
@@ -4220,7 +4312,7 @@
       const artRadius = outerRadius * 0.66;
 
       // Advance rotation angle smoothly when playing (or subtle idle drift)
-      const spinDelta = (state.audio.isPlaying ? 0.018 : 0.002) * (state.visualizer.turntableSpeed || 1.0);
+      const spinDelta = (frameClock.playing ? 0.018 : 0.002) * (state.visualizer.turntableSpeed || 1.0) * frameScale();
       state.visualizer.turntableAngle = (state.visualizer.turntableAngle + spinDelta) % (Math.PI * 2);
 
       ctx.save();
@@ -4349,7 +4441,7 @@
       // Calculate progress percentage inside current line
       let progress = 0;
       if (nextLine && nextLine.time > currentLine.time) {
-        progress = Math.min(1, Math.max(0, (audioPlayer.currentTime - currentLine.time) / (nextLine.time - currentLine.time)));
+        progress = Math.min(1, Math.max(0, (frameClock.songTime - currentLine.time) / (nextLine.time - currentLine.time)));
       }
 
       const fontName = state.visualizer.font;
@@ -4506,7 +4598,338 @@
       ctx.restore();
     }
 
-    // --- VIDEO RECORDING & EXPORT ENGINE ---
+    // --- FAST OFFLINE EXPORT (WebCodecs + Mediabunny) ---
+    // Renders the video frame by frame from precise audio analysis instead of recording the live
+    // canvas: faster than real time, no dropped frames, identical every time. Falls back to the
+    // real-time MediaRecorder path when WebCodecs or the chosen codecs aren't available.
+    const MEDIABUNNY_URL = 'https://cdn.jsdelivr.net/npm/mediabunny@1.63.0/dist/bundles/mediabunny.min.mjs';
+    let mediabunnyPromise = null;
+    function loadMediabunny() {
+      if (!mediabunnyPromise) {
+        mediabunnyPromise = import(MEDIABUNNY_URL).catch((e) => { mediabunnyPromise = null; throw e; });
+      }
+      return mediabunnyPromise;
+    }
+
+    // Reproduces AnalyserNode.getByteFrequencyData / getByteTimeDomainData from decoded PCM, per the
+    // Web Audio spec: Blackman window, |FFT| / N, temporal smoothing, decibels, then bytes. The live
+    // analyser smooths once per preview frame (~60 Hz), so the smoothing is adjusted to the export
+    // frame rate to keep exports looking like the preview.
+    function createOfflineAnalyser(mono, sampleRate, fftSize, fps, smoothing) {
+      const N = fftSize, half = N >> 1, bits = Math.log2(N);
+      const win = new Float64Array(N);
+      for (let i = 0; i < N; i++) win[i] = 0.42 - 0.5 * Math.cos((2 * Math.PI * i) / N) + 0.08 * Math.cos((4 * Math.PI * i) / N);
+      const rev = new Uint32Array(N);
+      for (let i = 0; i < N; i++) {
+        let r = 0;
+        for (let b = 0; b < bits; b++) r |= ((i >> b) & 1) << (bits - 1 - b);
+        rev[i] = r;
+      }
+      const cosT = new Float64Array(half), sinT = new Float64Array(half);
+      for (let i = 0; i < half; i++) { cosT[i] = Math.cos((2 * Math.PI * i) / N); sinT[i] = -Math.sin((2 * Math.PI * i) / N); }
+      const re = new Float64Array(N), im = new Float64Array(N);
+      const smoothed = new Float64Array(half);
+      const tau = Math.pow(Math.min(0.999, Math.max(0, smoothing)), 60 / fps);
+      const MIN_DB = -100, MAX_DB = -30, DB_SCALE = 255 / (MAX_DB - MIN_DB);
+      const at = (i) => (i >= 0 && i < mono.length ? mono[i] : 0);
+
+      return {
+        analyze(tSec, freqOut, timeOut) {
+          const centre = Math.round(tSec * sampleRate);
+          const start = centre - half; // window centred on the frame time
+          for (let i = 0; i < N; i++) { re[rev[i]] = at(start + i) * win[i]; im[rev[i]] = 0; }
+          for (let size = 2; size <= N; size <<= 1) {
+            const h = size >> 1, step = N / size;
+            for (let i = 0; i < N; i += size) {
+              for (let j = 0; j < h; j++) {
+                const k = j * step, a = i + j, b = a + h;
+                const tr = re[b] * cosT[k] - im[b] * sinT[k];
+                const ti = re[b] * sinT[k] + im[b] * cosT[k];
+                re[b] = re[a] - tr; im[b] = im[a] - ti;
+                re[a] += tr; im[a] += ti;
+              }
+            }
+          }
+          const n = Math.min(half, freqOut.length);
+          for (let k = 0; k < n; k++) {
+            smoothed[k] = tau * smoothed[k] + (1 - tau) * (Math.hypot(re[k], im[k]) / N);
+            const db = smoothed[k] > 0 ? 20 * Math.log10(smoothed[k]) : -Infinity;
+            const v = Math.floor(DB_SCALE * (db - MIN_DB));
+            freqOut[k] = v < 0 ? 0 : v > 255 ? 255 : v;
+          }
+          const tStart = centre - (timeOut.length >> 1);
+          for (let i = 0; i < timeOut.length; i++) {
+            const v = Math.floor(128 * (1 + at(tStart + i)));
+            timeOut[i] = v < 0 ? 0 : v > 255 ? 255 : v;
+          }
+        }
+      };
+    }
+
+    function mixToMono(buffer) {
+      const out = new Float32Array(buffer.length);
+      const chans = buffer.numberOfChannels;
+      for (let c = 0; c < chans; c++) {
+        const d = buffer.getChannelData(c);
+        for (let i = 0; i < d.length; i++) out[i] += d[i] / chans;
+      }
+      return out;
+    }
+
+    function exportVideoBitrate(w, h, fps) {
+      return Math.round(Math.max(4e6, Math.min(16e6, w * h * fps * 0.1)));
+    }
+
+    // Picks codecs this browser can encode for the chosen format, or null to use real-time recording
+    async function chooseFastExportPlan() {
+      if (typeof VideoEncoder === 'undefined' || typeof AudioEncoder === 'undefined' ||
+          typeof VideoFrame === 'undefined' || typeof AudioData === 'undefined') return null;
+      const { width, height, fps, format } = state.export;
+      const mp4 = format === 'mp4';
+      const candidates = mp4
+        ? [['avc1.64002A', 'avc'], ['avc1.4D402A', 'avc'], ['avc1.42E02A', 'avc']]
+        : [['vp09.00.41.08', 'vp9'], ['vp8', 'vp8']];
+      let video = null;
+      for (const [codec, mb] of candidates) {
+        // VP9/VP8 software encoders are 5-6x faster in realtime mode at the same bitrate; H.264 keeps the default
+        const config = { codec, width, height, framerate: fps, bitrate: exportVideoBitrate(width, height, fps), ...(mb === 'avc' ? { avc: { format: 'avc' } } : { latencyMode: 'realtime' }) };
+        try {
+          if ((await VideoEncoder.isConfigSupported(config)).supported) { video = { config, mb }; break; }
+        } catch (e) {}
+      }
+      if (!video) return null;
+      // MP4 carries AAC so it plays everywhere; WebM carries Opus
+      const audioConfig = { codec: mp4 ? 'mp4a.40.2' : 'opus', sampleRate: 48000, numberOfChannels: 2, bitrate: 192000 };
+      try {
+        if (!(await AudioEncoder.isConfigSupported(audioConfig)).supported) return null;
+      } catch (e) {
+        return null;
+      }
+      return { container: mp4 ? 'mp4' : 'webm', video, audio: { config: audioConfig, mb: mp4 ? 'aac' : 'opus' } };
+    }
+
+    const exportPathNote = document.getElementById('exportPathNote');
+    const btnCancelExport = document.getElementById('btnCancelExport');
+    let exportPathCheck = 0;
+    async function refreshExportPathNote() {
+      const check = ++exportPathCheck;
+      const plan = await chooseFastExportPlan();
+      if (check !== exportPathCheck) return; // a newer check superseded this one
+      exportPathNote.textContent = plan ? '⚡ Fast render' : '● Real-time recording';
+      exportPathNote.className = `mt-1 text-[10px] font-semibold ${plan ? 'text-emerald-400' : 'text-amber-400'}`;
+      exportPathNote.title = plan
+        ? 'Renders frame by frame, faster than real time, with no dropped frames'
+        : "This browser can't encode this format offline, so the song plays through once while it records";
+      recBtnLabel.textContent = plan ? 'Render Video' : 'Start Video Recording';
+    }
+    ['exportFormat', 'exportResolution', 'exportFps'].forEach(id =>
+      document.getElementById(id).addEventListener('change', refreshExportPathNote));
+
+    function waitForEncoderDequeue(encoder) {
+      return new Promise((resolve) => {
+        const timer = setTimeout(resolve, 20);
+        encoder.addEventListener('dequeue', () => { clearTimeout(timer); resolve(); }, { once: true });
+      });
+    }
+
+    function updateRenderProgress(done, total, elapsedSec) {
+      const pct = done / total;
+      const eta = done > 0 ? (elapsedSec * (total - done)) / done : 0;
+      exportProgressText.textContent = `Rendering frame ${done.toLocaleString()} / ${total.toLocaleString()} · ETA ${formatTime(eta)}`;
+      exportProgressPercent.textContent = `${Math.floor(pct * 100)}%`;
+      exportProgressBar.style.width = `${pct * 100}%`;
+    }
+
+    function setOfflineExportUi(busy) {
+      btnStartRecording.classList.toggle('hidden', busy);
+      btnCancelExport.classList.toggle('hidden', !busy);
+      btnCancelExport.classList.toggle('flex', busy);
+      btnCancelExport.disabled = false;
+      exportProgressBox.classList.toggle('hidden', !busy);
+      canvasViewportWrapper.classList.toggle('offline-rendering', busy); // show the frames being rendered
+      ['exportFormat', 'exportResolution', 'exportFps', 'exportRange'].forEach(id => { document.getElementById(id).disabled = busy; });
+      if (busy) {
+        exportProgressText.textContent = 'Preparing audio…';
+        exportProgressPercent.textContent = '0%';
+        exportProgressBar.style.width = '0%';
+      }
+    }
+
+    btnCancelExport.addEventListener('click', () => {
+      if (state.export.offlineJob) {
+        state.export.offlineJob.cancelled = true;
+        btnCancelExport.disabled = true;
+        exportProgressText.textContent = 'Cancelling…';
+      }
+    });
+
+    async function runOfflineExport(plan) {
+      const fps = state.export.fps || 60;
+      const job = { cancelled: false };
+      state.export.offlineJob = job;
+      setOfflineExportUi(true);
+      const wasEditing = layoutEditing;
+      let output = null, videoEncoder = null, audioEncoder = null, finished = false;
+
+      try {
+        initWebAudio();
+        if (state.audio.isPlaying) {
+          audioPlayer.pause();
+          state.audio.isPlaying = false;
+          updatePlayPauseUI();
+        }
+
+        // 1. Decode the song and work out the export range
+        const decoded = await audioCtx.decodeAudioData((await getTrackArrayBuffer()).slice(0));
+        const full = state.export.range === 'full';
+        const start = full ? 0 : Math.min(audioPlayer.currentTime || 0, decoded.duration);
+        const duration = full ? decoded.duration : Math.min(parseFloat(state.export.range), decoded.duration - start);
+        if (!(duration > 0.1)) throw new Error('Nothing left to export from the current position. Move the playhead back or choose Entire Song.');
+
+        // 2. Load the muxer (only now, when an export actually starts)
+        let mb;
+        try {
+          mb = await loadMediabunny();
+        } catch (e) {
+          const err = new Error("Couldn't load the fast-render component.");
+          err.fallback = true;
+          throw err;
+        }
+        if (job.cancelled) return;
+
+        output = new mb.Output({
+          format: plan.container === 'mp4' ? new mb.Mp4OutputFormat({ fastStart: 'in-memory' }) : new mb.WebMOutputFormat(),
+          target: new mb.BufferTarget()
+        });
+        const videoSource = new mb.EncodedVideoPacketSource(plan.video.mb);
+        const audioSource = new mb.EncodedAudioPacketSource(plan.audio.mb);
+        output.addVideoTrack(videoSource, { frameRate: fps });
+        output.addAudioTrack(audioSource);
+        await output.start();
+
+        let encodeError = null;
+        let videoMux = Promise.resolve(), audioMux = Promise.resolve();
+        videoEncoder = new VideoEncoder({
+          output: (chunk, meta) => { videoMux = videoMux.then(() => videoSource.add(mb.EncodedPacket.fromEncodedChunk(chunk), meta)); },
+          error: (e) => { encodeError = e; }
+        });
+        videoEncoder.configure(plan.video.config);
+        audioEncoder = new AudioEncoder({
+          output: (chunk, meta) => { audioMux = audioMux.then(() => audioSource.add(mb.EncodedPacket.fromEncodedChunk(chunk), meta)); },
+          error: (e) => { encodeError = e; }
+        });
+        audioEncoder.configure(plan.audio.config);
+
+        // 3. Audio: cut the export range, resample to 48 kHz stereo, encode in ~1 s chunks
+        exportProgressText.textContent = 'Encoding audio…';
+        const rate = plan.audio.config.sampleRate;
+        const mixCtx = new OfflineAudioContext(2, Math.max(1, Math.ceil(duration * rate)), rate);
+        const src = mixCtx.createBufferSource();
+        src.buffer = decoded;
+        src.connect(mixCtx.destination);
+        src.start(0, start, duration);
+        const pcm = await mixCtx.startRendering();
+        const left = pcm.getChannelData(0), right = pcm.getChannelData(1);
+        for (let off = 0; off < pcm.length && !job.cancelled; off += rate) {
+          const n = Math.min(rate, pcm.length - off);
+          const planar = new Float32Array(n * 2);
+          planar.set(left.subarray(off, off + n), 0);
+          planar.set(right.subarray(off, off + n), n);
+          const data = new AudioData({ format: 'f32-planar', sampleRate: rate, numberOfFrames: n, numberOfChannels: 2, timestamp: Math.round((off * 1e6) / rate), data: planar });
+          audioEncoder.encode(data);
+          data.close();
+        }
+        if (job.cancelled) return;
+        await audioEncoder.flush();
+        if (encodeError) throw encodeError;
+
+        // 4. Video: analyse, draw and encode every frame from a clean, seeded animation state
+        const fftSize = analyserNode ? analyserNode.fftSize : 512;
+        const analyser = createOfflineAnalyser(mixToMono(decoded), decoded.sampleRate, fftSize, fps, state.visualizer.smoothing);
+        const freq = new Uint8Array(fftSize / 2), time = new Uint8Array(fftSize / 2);
+        state.export.offlineRendering = true;
+        if (wasEditing) setLayoutEditing(false);
+        resetAnimationState();
+
+        const total = Math.max(1, Math.round(duration * fps));
+        const frameUs = 1e6 / fps;
+        const t0 = performance.now();
+        let lastUi = 0;
+        for (let i = 0; i < total; i++) {
+          if (job.cancelled) return;
+          if (encodeError) throw encodeError;
+          const songTime = start + i / fps;
+          analyser.analyze(songTime, freq, time);
+          drawScene({ t: i / fps, dt: 1 / fps, songTime, playing: true, freq, time });
+          const frame = new VideoFrame(visualizerCanvas, { timestamp: Math.round(i * frameUs), duration: Math.round(frameUs) });
+          videoEncoder.encode(frame, { keyFrame: i % (fps * 2) === 0 });
+          frame.close();
+          while (videoEncoder.encodeQueueSize > 8) await waitForEncoderDequeue(videoEncoder);
+          const now = performance.now();
+          if (now - lastUi > 120 || i === total - 1) {
+            lastUi = now;
+            updateRenderProgress(i + 1, total, (now - t0) / 1000);
+            await new Promise(r => setTimeout(r, 0)); // keep the page (and Cancel) responsive
+          }
+        }
+
+        // 5. Finish encoding and write the file
+        exportProgressText.textContent = 'Finalizing file…';
+        await videoEncoder.flush();
+        if (encodeError) throw encodeError;
+        await Promise.all([videoMux, audioMux]);
+        videoSource.close();
+        audioSource.close();
+        await output.finalize();
+        finished = true;
+
+        const mime = plan.container === 'mp4' ? 'video/mp4' : 'video/webm';
+        state.export.chunks = [new Blob([output.target.buffer], { type: mime })];
+        state.export.recordElapsed = duration;
+        state.export.lastRender = { frames: total, seconds: (performance.now() - t0) / 1000, duration };
+        finalizeExportedVideo(mime);
+      } finally {
+        for (const enc of [videoEncoder, audioEncoder]) {
+          try { if (enc && enc.state !== 'closed') enc.close(); } catch (e) {}
+        }
+        if (output && !finished) {
+          try { await output.cancel(); } catch (e) {}
+        }
+        if (job.cancelled && !finished) showToast('Export cancelled', 'info');
+        state.export.offlineRendering = false;
+        state.export.offlineJob = null;
+        liveLastNow = 0;
+        if (wasEditing) setLayoutEditing(true);
+        setOfflineExportUi(false);
+      }
+    }
+
+    // Export button: fast offline render when supported, otherwise real-time recording
+    async function startExport() {
+      if (state.export.isRecording || state.export.offlineJob) return;
+      if (!state.audio.isLoaded) {
+        showToast('Please upload or load a track before exporting', 'error');
+        return;
+      }
+      const plan = await chooseFastExportPlan();
+      if (!plan) {
+        startVideoRecording();
+        return;
+      }
+      try {
+        await runOfflineExport(plan);
+      } catch (err) {
+        if (err && err.fallback) {
+          showToast(`${err.message} Using real-time recording instead.`, 'info');
+          startVideoRecording();
+        } else {
+          console.error('Fast export error:', err);
+          showToast('Export error: ' + (err && err.message ? err.message : err), 'error');
+        }
+      }
+    }
+
+    // --- REAL-TIME VIDEO RECORDING (fallback export path) ---
     function startVideoRecording() {
       if (!state.audio.isLoaded) {
         showToast('Please upload or load a track before recording', 'error');
@@ -4567,6 +4990,7 @@
         }
 
         state.export.chunks = [];
+        state.export.lastRender = null; // real-time recording: the dialog reports recorded length
         state.export.mediaRecorder = new MediaRecorder(combinedStream, {
           mimeType: mimeType || undefined,
           videoBitsPerSecond: 6000000 // 6 Mbps high quality
@@ -4659,14 +5083,18 @@
 
       modalVideoResolution.textContent = `${state.export.width} × ${state.export.height} @ ${state.export.fps}fps`;
       modalVideoSize.textContent = `${(videoBlob.size / (1024 * 1024)).toFixed(2)} MB`;
-      modalVideoDuration.textContent = `${formatTime(state.export.recordElapsed || 0)} recorded`;
+      const fast = state.export.lastRender;
+      modalVideoDuration.textContent = fast
+        ? `${formatTime(fast.duration)} rendered in ${formatTime(fast.seconds)} (${(fast.duration / Math.max(0.01, fast.seconds)).toFixed(1)}× real time)`
+        : `${formatTime(state.export.recordElapsed || 0)} recorded`;
 
       modalExportComplete.classList.remove('hidden');
       modalExportComplete.classList.add('flex');
       showToast('Video ready! Download anytime.', 'success');
     }
 
-    btnStartRecording.addEventListener('click', startVideoRecording);
+    btnStartRecording.addEventListener('click', startExport);
+    refreshExportPathNote();
     btnStopRecording.addEventListener('click', stopVideoRecording);
 
     modalBtnClose.addEventListener('click', () => {
