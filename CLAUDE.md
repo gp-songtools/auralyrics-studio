@@ -25,7 +25,9 @@
 - Privacy & credits live on the suite page `gp-songtools.github.io/toolsmenu/privacy.html` (repo `gp-songtools/toolsmenu`); update it and README "Privacy & credits" when changing what is sent, stored or credited
 - Groq/OpenAI key: in memory by default; saved to `localStorage` (`aura_whisper_key`) only while "Remember key on this device" (`#chkRememberWhisperKey`) is ticked, via `syncSavedWhisperKey()`; never put keys in URLs, logs or errors
 - Other `localStorage` keys: `aura_left_tab`, `aura_local_whisper_model`, settings (`SETTINGS_KEY`), cover art (`COVER_ART_KEY`), background image (`BG_IMAGE_KEY`), palettes (`CUSTOM_PALETTES_KEY`); wrap access in try/catch
-- Everything runs in the browser; no backend. External requests: Tailwind CDN, Google Fonts, jsDelivr (Transformers.js 2.17.2), Hugging Face (Whisper models), Groq/OpenAI (only on request), Cloudflare Web Analytics
+- Everything runs in the browser; no backend. External requests: Tailwind CDN, Google Fonts, jsDelivr (Transformers.js 2.17.2; Mediabunny 1.63.0, imported only when a fast render starts), Hugging Face (Whisper models), Groq/OpenAI (only on request), Cloudflare Web Analytics
+- Rendering is deterministic: `drawScene(frame)` draws one frame from `frameClock` (`t`, `dt`, `songTime`) and the shared `dataFrequencyArray` / `dataTimeDomainArray`; the live loop (`renderFrame`) and the fast exporter (`runOfflineExport`) both feed it. Never use `Date.now()`, `performance.now()`, `audioPlayer.currentTime` or `Math.random()` inside drawing code: use `frameClock`, `frameScale()` / `easeK()` for per-frame amounts, and the seeded `rng()`; reset new animation state in `resetAnimationState()`
+- WebCodecs needs a secure context: test the exporter at `http://localhost` (e.g. `page.route` on `http://localhost/**`), not `file://`; Linux Chromium can't encode AAC, so MP4 shows "Real-time recording" there while WebM uses Fast render
 - Check layout at 390 px and 1280 px; desktop (≥1024 px) locks the page to the viewport with independently scrolling panes; the footer sits below `#appMain`
 
 ## Git workflow

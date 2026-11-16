@@ -2,6 +2,19 @@
 
 All notable changes to AuraLyrics Studio, newest first. The app has no version numbers, so entries are grouped by date.
 
+## 2026-11-16 — Fast render
+
+### Added
+
+- **Fast render** for video export in Chrome and Edge: instead of recording while the song plays, the app renders every frame on its own and encodes it, usually much faster than real time and with no dropped frames. The export pane shows frames done, the time left and a **Cancel** button, and the finished-video window says how long the render took.
+- Under the format picker you can see which method your browser will use: **Fast render**, or **Real-time recording** in browsers that can't encode that format (for example Firefox, or MP4 where the browser has no AAC encoder). Real-time recording works as before.
+
+### Changed
+
+- Exporting the same song with the same settings now gives the same video every time.
+- Animations (particles, starfield, turntable, beat rings and meters) now move at the same speed at 30 and 60 FPS and on fast or slow screens.
+- Starting a fast render downloads the free Mediabunny video library from jsDelivr once. Nothing you make is uploaded.
+
 ## 2026-11-09 — Joins the GP Song Tools
 
 ### Added
