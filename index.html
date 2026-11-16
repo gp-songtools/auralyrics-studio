@@ -85,7 +85,7 @@
 
     /* Layout editor: on-screen boxes for moving / resizing layers (never drawn into the video) */
     #layoutEditor { position: absolute; z-index: 20; }
-    .layout-editing #canvasPlayOverlay { display: none; }
+    .layout-editing #canvasPlayOverlay, .offline-rendering #canvasPlayOverlay { display: none; }
     .layout-box {
       position: absolute; box-sizing: border-box; border: 2px dashed var(--c);
       border-radius: 6px; pointer-events: none; opacity: 0.55;
@@ -4746,6 +4746,7 @@
       btnCancelExport.classList.toggle('flex', busy);
       btnCancelExport.disabled = false;
       exportProgressBox.classList.toggle('hidden', !busy);
+      canvasViewportWrapper.classList.toggle('offline-rendering', busy); // show the frames being rendered
       ['exportFormat', 'exportResolution', 'exportFps', 'exportRange'].forEach(id => { document.getElementById(id).disabled = busy; });
       if (busy) {
         exportProgressText.textContent = 'Preparing audio…';
