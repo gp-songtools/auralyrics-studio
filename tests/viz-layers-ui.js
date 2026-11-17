@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
-const { openApp, makeChecker } = require('./serve-and-stub');
+const { openApp, makeChecker, findMediabunny } = require('./serve-and-stub');
 
 const SHOT_DIR = process.env.SHOT_DIR || os.tmpdir();
 const CSS = path.resolve(process.env.TAILWIND_CSS || path.join(__dirname, '.tailwind.css'));
@@ -289,19 +289,6 @@ async function independentRings(t) {
   t.ok(new Set(snaps.map((s) => s[0])).size > 2 && new Set(snaps.map((s) => s[1])).size > 2, 'both layers evolve over time');
   t.eq(app.errors, [], 'no console / page errors');
   await app.close();
-}
-
-function findMediabunny() {
-  if (process.env.MEDIABUNNY_BUNDLE && fs.existsSync(process.env.MEDIABUNNY_BUNDLE)) return process.env.MEDIABUNNY_BUNDLE;
-  const dir = path.join(os.tmpdir(), 'aura-mediabunny');
-  const f = path.join(dir, 'node_modules/mediabunny/dist/bundles/mediabunny.min.mjs');
-  if (fs.existsSync(f)) return f;
-  try {
-    fs.mkdirSync(dir, { recursive: true });
-    execSync('npm i --no-audit --no-fund --prefix ' + JSON.stringify(dir) + ' mediabunny@1.63.0', { stdio: 'ignore' });
-    if (fs.existsSync(f)) return f;
-  } catch (e) {}
-  return null;
 }
 
 async function exportMatch(t) {

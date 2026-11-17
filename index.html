@@ -787,6 +787,77 @@
                 </div>
               </div>
             </div>
+
+            <!-- Logos & images: up to 3 picture layers above the visualizer -->
+            <div id="logoLayersBlock" class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-semibold text-slate-200">Logos &amp; images <span id="logoLayerCount" class="font-normal text-slate-500">0/3</span></span>
+                <span class="text-[10px] text-slate-500">Top draws in front</span>
+              </div>
+              <p id="logoLayerEmpty" class="text-[11px] text-slate-500">Add a logo, artist photo or channel badge</p>
+              <div id="logoLayerList" role="listbox" aria-label="Logos and images" class="space-y-1"></div>
+              <div class="grid grid-cols-2 gap-2">
+                <button id="btnLogoLayerAdd" type="button" title="Add a logo or image layer" aria-label="Add logo" class="viz-layer-btn min-h-[36px] px-2 rounded-lg bg-pink-500/15 border border-pink-500/40 text-pink-200 text-xs font-semibold hover:bg-pink-500/25 transition disabled:opacity-40">+ Add logo</button>
+                <button id="btnLogoLayerDelete" type="button" title="Delete the selected logo" aria-label="Delete selected logo" class="viz-layer-btn min-h-[36px] px-2 rounded-lg bg-slate-900 border border-slate-700 text-red-300 text-xs font-semibold hover:border-red-500/60 transition disabled:opacity-40">Delete</button>
+              </div>
+
+              <div id="logoLayerSettings" class="hidden space-y-2.5 pt-1">
+                <h3 id="logoLayerHeading" class="text-xs font-semibold text-slate-200">Logo settings</h3>
+                <div class="flex items-center gap-2">
+                  <label for="logoImageInput" id="labelLogoImageUpload" class="cursor-pointer min-h-[32px] inline-flex items-center px-2.5 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 text-[11px] font-medium transition">Upload image</label>
+                  <input type="file" id="logoImageInput" accept="image/*" class="hidden" />
+                  <button id="btnLogoImageRemove" type="button" class="hidden min-h-[32px] px-2.5 rounded bg-slate-900 border border-slate-700 text-slate-300 hover:text-rose-300 text-[11px] font-medium transition">Remove image</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label for="selectLogoShape" class="block text-[10px] text-slate-400 mb-1">Shape</label>
+                    <select id="selectLogoShape" class="w-full min-h-[32px] bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="original">Original</option><option value="circle">Circle</option><option value="rounded">Rounded square</option></select>
+                  </div>
+                  <div>
+                    <label for="inputLogoOutlineColor" class="block text-[10px] text-slate-400 mb-1">Outline colour</label>
+                    <input type="color" id="inputLogoOutlineColor" value="#ffffff" class="w-full h-8 bg-slate-950 border border-slate-800 rounded cursor-pointer" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>Outline</span><span id="labelLogoOutline">Off</span></div>
+                    <input type="range" id="sliderLogoOutline" min="0" max="40" step="1" value="0" aria-label="Outline width" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1" />
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>Opacity</span><span id="labelLogoOpacity">100%</span></div>
+                    <input type="range" id="sliderLogoOpacity" min="0" max="100" step="1" value="100" aria-label="Opacity" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>Rotation</span><span id="labelLogoRotation">0&deg;</span></div>
+                    <input type="range" id="sliderLogoRotation" min="-180" max="180" step="1" value="0" aria-label="Rotation" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-1" />
+                  </div>
+                  <div>
+                    <label for="selectLogoAnimation" class="block text-[10px] text-slate-400 mb-1">Animation</label>
+                    <select id="selectLogoAnimation" class="w-full min-h-[32px] bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="still">Still</option><option value="spin">Spin</option><option value="pulse">Pulse</option><option value="spinpulse">Spin + pulse</option></select>
+                  </div>
+                </div>
+                <div id="rowLogoSpin">
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>Spin speed</span><span id="labelLogoSpin">10 rpm</span></div>
+                  <input type="range" id="sliderLogoSpin" min="-60" max="60" step="1" value="10" aria-label="Spin speed" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1" />
+                </div>
+                <div id="rowLogoPulse" class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label for="selectLogoReactsTo" class="block text-[10px] text-slate-400 mb-1">Reacts to</label>
+                    <select id="selectLogoReactsTo" class="w-full min-h-[32px] bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic">Classic (bass energy)</option><option value="kick" selected>Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[10px] text-slate-400 mb-1"><span>Pulse amount</span><span id="labelLogoPulse">100%</span></div>
+                    <input type="range" id="sliderLogoPulse" min="0" max="200" step="10" value="100" aria-label="Pulse amount" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-2" />
+                  </div>
+                </div>
+                <label class="flex items-center space-x-2 cursor-pointer text-[11px] text-slate-300 min-h-[32px]">
+                  <input type="checkbox" id="chkLogoPunch" checked class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
+                  <span>Camera punch moves this layer</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -982,7 +1053,7 @@
           <button id="btnLayoutResetLayer" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reset the selected layer to its default position &amp; size">Reset</button>
           <button id="btnLayoutResetAll" class="whitespace-nowrap px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Reset All</button>
           <button id="btnLayoutDone" class="px-2.5 py-1 rounded-lg bg-pink-500 hover:bg-pink-600 text-white font-semibold transition">Preview</button>
-          <p class="w-full text-[10px] text-slate-500">Drag to move &middot; handles resize &middot; Shift keeps proportions &middot; Alt disables snapping &middot; arrow keys nudge &middot; double-click resets &middot; L or Esc for a clean preview</p>
+          <p class="w-full text-[10px] text-slate-500">Drag to move &middot; handles resize &middot; Shift keeps proportions (logos keep them unless you hold Shift) &middot; Alt disables snapping &middot; arrow keys nudge &middot; double-click resets &middot; L or Esc for a clean preview</p>
         </div>
 
         <!-- Integrated Transport Bar -->
@@ -1443,6 +1514,30 @@
       box: null // layout rect {x, y, w, h} as frame fractions; null = default (full frame)
     };
 
+    // Logo / image layers (drawn above the visualizer, below the lyrics)
+    const MAX_LOGO_LAYERS = 3;
+    const LOGO_IMAGE_KEY_PREFIX = 'aura_logo_image_v1_'; // + slot number 1..3
+    const LOGO_BOX_COLORS = ['#38bdf8', '#a3e635', '#fb923c'];
+    const LOGO_SHAPES = ['original', 'circle', 'rounded'];
+    const LOGO_ANIMATIONS = ['still', 'spin', 'pulse', 'spinpulse'];
+    const LOGO_LAYER_DEFAULTS = {
+      enabled: true,
+      shape: 'original',
+      outlineColor: '#ffffff',
+      outlineWidth: 0, // px at 1080p (scaled by frame height / 1080); 0 = off
+      opacity: 1,
+      rotation: 0, // degrees
+      animation: 'still',
+      spinSpeed: 10, // turns per minute
+      reactsTo: 'kick',
+      pulseAmount: 1,
+      punch: true, // zoom with the camera punch
+      box: null // layout rect as frame fractions; null = default
+    };
+    const logoImages = {}; // layer id -> decoded HTMLImageElement (never saved in the settings blob)
+    const logoRuntime = new Map(); // layer id -> { angle }
+    const logoOutlineCache = new Map(); // layer id -> { key, canvas, pad }
+
     // --- Application State ---
     const state = {
       audio: {
@@ -1462,6 +1557,8 @@
         currentIndex: -1
       },
       visualizer: {
+        logoLayers: [], // back to front; each {id: 'l1'..'l3', ...LOGO_LAYER_DEFAULTS}
+        selectedLogoLayer: null,
         // Visualizer layers, back to front (index 0 is drawn first). Each: {id, ...VIZ_LAYER_DEFAULTS}
         vizLayers: [{ id: 'v1', ...VIZ_LAYER_DEFAULTS }],
         selectedVizLayer: 'v1',
@@ -3341,6 +3438,286 @@
     syncVizLayerControls();
     renderVizLayerList();
 
+    // --- LOGO / IMAGE LAYERS ---
+    // Ids 'l1'..'l3' are storage slots (image saved under LOGO_IMAGE_KEY_PREFIX + slot).
+    function getLogoLayer(id) { return state.visualizer.logoLayers.find(l => l.id === id) || null; }
+    function getSelectedLogoLayer() { return getLogoLayer(state.visualizer.selectedLogoLayer); }
+    function logoStorageKey(id) { return LOGO_IMAGE_KEY_PREFIX + id.slice(1); }
+
+    function nextLogoLayerId() {
+      for (let n = 1; n <= MAX_LOGO_LAYERS; n++) if (!getLogoLayer('l' + n)) return 'l' + n;
+      return null;
+    }
+
+    function addLogoLayer() {
+      const list = state.visualizer.logoLayers;
+      const id = list.length >= MAX_LOGO_LAYERS ? null : nextLogoLayerId();
+      if (!id) return null;
+      const layer = { id, ...LOGO_LAYER_DEFAULTS };
+      list.push(layer);
+      state.visualizer.selectedLogoLayer = id;
+      selectedLayer = 'logo:' + id;
+      onLogoLayersChanged(true);
+      return layer;
+    }
+
+    function deleteLogoLayer(id) {
+      const list = state.visualizer.logoLayers;
+      const i = list.findIndex(l => l.id === id);
+      if (i < 0) return;
+      list.splice(i, 1);
+      clearLogoImage(id);
+      logoRuntime.delete(id);
+      logoOutlineCache.delete(id);
+      if (state.visualizer.selectedLogoLayer === id) {
+        const n = list[Math.min(i, list.length - 1)];
+        state.visualizer.selectedLogoLayer = n ? n.id : null;
+        if (selectedLayer === 'logo:' + id) selectedLayer = n ? 'logo:' + n.id : 'viz:' + state.visualizer.selectedVizLayer;
+      }
+      onLogoLayersChanged(true);
+    }
+
+    // dir -1 = toward the back (index 0 is drawn first), +1 = toward the front
+    function moveLogoLayer(id, dir) {
+      const list = state.visualizer.logoLayers;
+      const i = list.findIndex(l => l.id === id);
+      const j = i + (dir < 0 ? -1 : 1);
+      if (i < 0 || j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      onLogoLayersChanged(true);
+    }
+
+    function setLogoLayerProp(id, key, value) {
+      const layer = getLogoLayer(id);
+      if (!layer || !(key in LOGO_LAYER_DEFAULTS)) return;
+      layer[key] = value;
+      onLogoLayersChanged(key === 'enabled' || key === 'box' || key === 'shape');
+    }
+
+    function selectLogoLayer(id) {
+      if (!getLogoLayer(id)) return;
+      state.visualizer.selectedLogoLayer = id;
+      selectedLayer = 'logo:' + id;
+      onLogoLayersChanged(false);
+    }
+
+    // Single refresh hook. structural = the set / order / enabled state / shape of layers changed.
+    function onLogoLayersChanged(structural = true) {
+      if (!getLogoLayer(state.visualizer.selectedLogoLayer)) {
+        const first = state.visualizer.logoLayers[0];
+        state.visualizer.selectedLogoLayer = first ? first.id : null;
+      }
+      if (structural) { rebuildLayoutBoxes(); rebuildLayoutToolbar(); }
+      syncLayoutEditor();
+      // UI builder: logo list/controls
+      if (typeof renderLogoLayerList === 'function') renderLogoLayerList();
+      if (typeof syncLogoLayerControls === 'function') syncLogoLayerControls();
+      scheduleSettingsSave();
+    }
+
+    // Default box for a logo: centred, 25% of the frame height, image aspect when shown as original
+    function defaultLogoBox(id, W, H) {
+      const list = state.visualizer.logoLayers;
+      const idx = Math.max(0, list.findIndex(l => l.id === id));
+      const layer = getLogoLayer(id);
+      const img = logoImages[id];
+      let a = 1;
+      if (img && img.naturalWidth > 0 && img.naturalHeight > 0 && layer && layer.shape === 'original') a = img.naturalWidth / img.naturalHeight;
+      let h = 0.25;
+      let w = (0.25 * H * a) / W;
+      if (w > 0.9) { h = h * 0.9 / w; w = 0.9; }
+      const off = 0.03 * idx;
+      return { x: (1 - w) / 2 + off, y: (1 - h) / 2 + off, w, h };
+    }
+
+    // Lower-level: use a decoded image for a layer (optionally saving a downscaled copy for next visit)
+    function setLogoImage(id, img, opts = {}) {
+      const layer = getLogoLayer(id);
+      if (!layer || !img || !img.naturalWidth) return;
+      logoImages[id] = img;
+      logoOutlineCache.delete(id);
+      if (opts.save !== false) saveLogoImage(id, img);
+      if (opts.refit !== false) {
+        const W = visualizerCanvas.width, H = visualizerCanvas.height;
+        const old = layer.box;
+        layer.box = null;
+        const box = defaultLogoBox(id, W, H);
+        if (old) { box.x = old.x + old.w / 2 - box.w / 2; box.y = old.y + old.h / 2 - box.h / 2; }
+        layer.box = box;
+      }
+      onLogoLayersChanged(true);
+    }
+
+    function saveLogoImage(id, img) {
+      try {
+        const max = 1024;
+        const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        localStorage.setItem(logoStorageKey(id), c.toDataURL('image/webp', 0.9));
+      } catch (e) {
+        showToast('Logo is too large to remember after reload, but it is in use now', 'info');
+      }
+    }
+
+    function setLogoImageFromFile(id, file) {
+      return new Promise((resolve) => {
+        if (!file || !getLogoLayer(id)) { resolve(false); return; }
+        const fail = () => { showToast('Could not read that image file', 'error'); resolve(false); };
+        const reader = new FileReader();
+        reader.onerror = fail;
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => { setLogoImage(id, img, { save: true }); resolve(true); };
+          img.onerror = fail;
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function clearLogoImage(id) {
+      delete logoImages[id];
+      logoOutlineCache.delete(id);
+      try { localStorage.removeItem(logoStorageKey(id)); } catch (e) {}
+    }
+
+    function resetLogoRuntime() { logoRuntime.clear(); }
+
+    // --- Logos & images card (Visualizer tab) ---
+    let logoThumbSeq = 0;
+    function logoThumbUrl(img) {
+      if (!img || !(img.naturalWidth > 0)) return '';
+      if (!img.__thumb) {
+        try {
+          const c = document.createElement('canvas'); c.width = c.height = 40;
+          const s = Math.min(40 / img.naturalWidth, 40 / img.naturalHeight);
+          const w = img.naturalWidth * s, h = img.naturalHeight * s;
+          c.getContext('2d').drawImage(img, (40 - w) / 2, (40 - h) / 2, w, h);
+          img.__thumb = c.toDataURL('image/png');
+        } catch (e) { img.__thumb = ''; }
+        img.__thumbId = ++logoThumbSeq;
+      }
+      return img.__thumb;
+    }
+    let logoListSig = '';
+    function renderLogoLayerList() {
+      const list = document.getElementById('logoLayerList');
+      if (!list) return;
+      const layers = state.visualizer.logoLayers;
+      const sel = getSelectedLogoLayer();
+      const sig = layers.map(l => { const im = logoImages[l.id]; if (im) logoThumbUrl(im); return `${l.id}:${l.enabled ? 1 : 0}:${im ? im.__thumbId : 0}`; }).join(',') + '|' + (sel ? sel.id : '');
+      if (sig !== logoListSig) {
+        logoListSig = sig;
+        list.textContent = '';
+        for (let i = layers.length - 1; i >= 0; i--) {
+          const l = layers[i];
+          const row = document.createElement('div');
+          row.className = 'logo-layer-row flex items-center gap-1 rounded-lg border px-1 ' + (sel && l.id === sel.id ? 'bg-pink-500/15 border-pink-500' : 'bg-slate-900 border-slate-800 hover:border-slate-700') + (l.enabled ? '' : ' opacity-60');
+          row.dataset.layerId = l.id;
+          row.setAttribute('role', 'option');
+          row.setAttribute('aria-selected', sel && l.id === sel.id ? 'true' : 'false');
+          row.tabIndex = 0;
+          const n = i + 1;
+          const thumb = logoThumbUrl(logoImages[l.id]);
+          row.innerHTML =
+            `<button type="button" data-act="toggle" aria-pressed="${l.enabled}" title="${l.enabled ? 'Hide' : 'Show'} Logo ${n}" aria-label="${l.enabled ? 'Hide' : 'Show'} Logo ${n}" class="viz-layer-btn shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-slate-300 hover:bg-slate-800">${l.enabled ? VIZ_EYE_ON : VIZ_EYE_OFF}</button>` +
+            `<span class="shrink-0 w-2 h-2 rounded-full" style="background:${LOGO_BOX_COLORS[i % LOGO_BOX_COLORS.length]}" aria-hidden="true"></span>` +
+            `<span class="flex-1 min-w-0 flex items-center gap-2 text-xs"><span class="font-semibold text-slate-100 shrink-0">Logo ${n}</span>` +
+            (thumb ? `<img class="logo-thumb w-7 h-7 object-contain rounded bg-slate-950 border border-slate-800" alt="" src="${thumb}" />` : `<span class="logo-nothumb text-slate-500 truncate">No image</span>`) + `</span>` +
+            `<button type="button" data-act="up" ${i === layers.length - 1 ? 'disabled' : ''} title="Move Logo ${n} toward the front" aria-label="Move Logo ${n} up (toward the front)" class="viz-layer-btn shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-slate-300 hover:bg-slate-800 disabled:opacity-30"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg></button>` +
+            `<button type="button" data-act="down" ${i === 0 ? 'disabled' : ''} title="Move Logo ${n} toward the back" aria-label="Move Logo ${n} down (toward the back)" class="viz-layer-btn shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-slate-300 hover:bg-slate-800 disabled:opacity-30"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>`;
+          list.appendChild(row);
+        }
+      }
+      document.getElementById('logoLayerCount').textContent = `${layers.length}/${MAX_LOGO_LAYERS}`;
+      document.getElementById('logoLayerEmpty').classList.toggle('hidden', layers.length > 0);
+      document.getElementById('btnLogoLayerAdd').disabled = layers.length >= MAX_LOGO_LAYERS;
+      document.getElementById('btnLogoLayerDelete').disabled = !sel;
+    }
+
+    function syncLogoLayerControls() {
+      const box = document.getElementById('logoLayerSettings');
+      if (!box) return;
+      const l = getSelectedLogoLayer();
+      box.classList.toggle('hidden', !l);
+      if (!l) return;
+      const idx = state.visualizer.logoLayers.indexOf(l);
+      const $ = (id) => document.getElementById(id);
+      $('logoLayerHeading').textContent = `Logo settings \u2014 Logo ${idx + 1}`;
+      const has = !!logoImages[l.id];
+      $('labelLogoImageUpload').textContent = has ? 'Replace image' : 'Upload image';
+      $('btnLogoImageRemove').classList.toggle('hidden', !has);
+      $('selectLogoShape').value = l.shape;
+      $('inputLogoOutlineColor').value = l.outlineColor;
+      $('sliderLogoOutline').value = l.outlineWidth;
+      $('labelLogoOutline').textContent = l.outlineWidth > 0 ? `${l.outlineWidth} px` : 'Off';
+      const op = Math.round(l.opacity * 100);
+      $('sliderLogoOpacity').value = op; $('labelLogoOpacity').textContent = `${op}%`;
+      $('sliderLogoRotation').value = l.rotation; $('labelLogoRotation').textContent = `${l.rotation}\u00b0`;
+      $('selectLogoAnimation').value = l.animation;
+      $('sliderLogoSpin').value = l.spinSpeed; $('labelLogoSpin').textContent = `${l.spinSpeed} rpm`;
+      $('selectLogoReactsTo').value = l.reactsTo;
+      const pa = Math.round(l.pulseAmount * 100);
+      $('sliderLogoPulse').value = pa; $('labelLogoPulse').textContent = `${pa}%`;
+      $('chkLogoPunch').checked = !!l.punch;
+      $('rowLogoSpin').classList.toggle('hidden', !(l.animation === 'spin' || l.animation === 'spinpulse'));
+      $('rowLogoPulse').classList.toggle('hidden', !(l.animation === 'pulse' || l.animation === 'spinpulse'));
+    }
+
+    (function wireLogoLayerUi() {
+      const $ = (id) => document.getElementById(id);
+      const list = $('logoLayerList');
+      list.addEventListener('click', (e) => {
+        const row = e.target.closest('.logo-layer-row');
+        if (!row) return;
+        const id = row.dataset.layerId;
+        const act = e.target.closest('[data-act]')?.dataset.act;
+        if (act === 'toggle') { const l = getLogoLayer(id); if (l) setLogoLayerProp(id, 'enabled', !l.enabled); }
+        else if (act === 'up') moveLogoLayer(id, 1);
+        else if (act === 'down') moveLogoLayer(id, -1);
+        selectLogoLayer(id);
+      });
+      list.addEventListener('keydown', (e) => {
+        const row = e.target.closest('.logo-layer-row');
+        if (!row || e.target !== row) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); selectLogoLayer(row.dataset.layerId); }
+      });
+      $('btnLogoLayerAdd').addEventListener('click', () => addLogoLayer());
+      $('btnLogoLayerDelete').addEventListener('click', () => { const l = getSelectedLogoLayer(); if (l) deleteLogoLayer(l.id); });
+      const bind = (id, evt, key, read) => $(id).addEventListener(evt, (e) => {
+        const l = getSelectedLogoLayer();
+        if (l) setLogoLayerProp(l.id, key, read(e.target));
+      });
+      bind('selectLogoShape', 'change', 'shape', (el) => el.value);
+      bind('inputLogoOutlineColor', 'input', 'outlineColor', (el) => el.value);
+      bind('sliderLogoOutline', 'input', 'outlineWidth', (el) => parseInt(el.value, 10));
+      bind('sliderLogoOpacity', 'input', 'opacity', (el) => parseInt(el.value, 10) / 100);
+      bind('sliderLogoRotation', 'input', 'rotation', (el) => parseInt(el.value, 10));
+      bind('selectLogoAnimation', 'change', 'animation', (el) => el.value);
+      bind('sliderLogoSpin', 'input', 'spinSpeed', (el) => parseInt(el.value, 10));
+      bind('selectLogoReactsTo', 'change', 'reactsTo', (el) => el.value);
+      bind('sliderLogoPulse', 'input', 'pulseAmount', (el) => parseInt(el.value, 10) / 100);
+      bind('chkLogoPunch', 'change', 'punch', (el) => el.checked);
+      $('logoImageInput').addEventListener('change', async (e) => {
+        const input = e.target;
+        const file = input.files && input.files[0];
+        const l = getSelectedLogoLayer();
+        if (file && l && await setLogoImageFromFile(l.id, file)) showToast('Logo added!', 'success');
+        input.value = '';
+      });
+      $('btnLogoImageRemove').addEventListener('click', () => {
+        const l = getSelectedLogoLayer();
+        if (!l) return;
+        clearLogoImage(l.id);
+        onLogoLayersChanged(true);
+      });
+    })();
+    syncLogoLayerControls();
+    renderLogoLayerList();
+
     // --- LAYER LAYOUT: movable / resizable visualizer layers, Turntable & Lyrics ---
     // Boxes are stored as fractions of the frame, so a layout survives resolution / aspect changes.
     // Layout item names: 'viz:<layer id>' for each visualizer layer, plus 'turntable' and 'lyrics'.
@@ -3355,11 +3732,13 @@
     // Every positionable item in stacking order: [{name, label, color}]
     function layoutItems() {
       const items = state.visualizer.vizLayers.map((l, i) => ({ name: 'viz:' + l.id, label: 'Viz ' + (i + 1), color: VIZ_BOX_COLORS[i % VIZ_BOX_COLORS.length] }));
+      state.visualizer.logoLayers.forEach((l, i) => items.push({ name: 'logo:' + l.id, label: 'Logo ' + (i + 1), color: LOGO_BOX_COLORS[i % LOGO_BOX_COLORS.length] }));
       for (const [name, meta] of Object.entries(LAYOUT_FIXED)) items.push({ name, ...meta });
       return items;
     }
 
     function defaultLayerBox(name, W, H) {
+      if (name.startsWith('logo:')) return defaultLogoBox(name.slice(5), W, H);
       if (name === 'turntable') {
         const side = Math.min(W, H) * TURNTABLE_BOX_FRACTION;
         return { x: (W - side) / 2 / W, y: (H - side) / 2 / H, w: side / W, h: side / H };
@@ -3372,12 +3751,19 @@
         const l = getVizLayer(name.slice(4));
         return (l && l.box) || defaultLayerBox(name, W, H);
       }
+      if (name.startsWith('logo:')) {
+        const l = getLogoLayer(name.slice(5));
+        return (l && l.box) || defaultLayerBox(name, W, H);
+      }
       return state.visualizer.layers[name] || defaultLayerBox(name, W, H);
     }
 
     function setLayerBox(name, box) {
       if (name.startsWith('viz:')) {
         const l = getVizLayer(name.slice(4));
+        if (l) l.box = box;
+      } else if (name.startsWith('logo:')) {
+        const l = getLogoLayer(name.slice(5));
         if (l) l.box = box;
       } else {
         state.visualizer.layers[name] = box;
@@ -3442,6 +3828,7 @@
 
     function layerAvailable(name) {
       if (name.startsWith('viz:')) return !!getVizLayer(name.slice(4));
+      if (name.startsWith('logo:')) return !!getLogoLayer(name.slice(5));
       return name !== 'turntable' || state.visualizer.turntableEnabled;
     }
 
@@ -3457,8 +3844,9 @@
       layoutEditor.style.height = `${dh}px`;
 
       if (!layerAvailable(selectedLayer)) {
+        const selLogo = selectedLayer.startsWith('logo:') ? getSelectedLogoLayer() : null;
         const sel = getSelectedVizLayer();
-        selectedLayer = 'viz:' + sel.id;
+        selectedLayer = selLogo ? 'logo:' + selLogo.id : 'viz:' + sel.id;
       }
       const items = layoutItems();
       const colors = Object.fromEntries(items.map(i => [i.name, i.color]));
@@ -3469,7 +3857,8 @@
         box.style.width = `${b.w * 100}%`;
         box.style.height = `${b.h * 100}%`;
         box.style.display = layerAvailable(name) ? '' : 'none';
-        const hidden = name.startsWith('viz:') && !getVizLayer(name.slice(4)).enabled;
+        const hl = name.startsWith('viz:') ? getVizLayer(name.slice(4)) : (name.startsWith('logo:') ? getLogoLayer(name.slice(5)) : null);
+        const hidden = !!hl && !hl.enabled;
         box.style.opacity = hidden ? '0.4' : '';
         box.classList.toggle('selected', name === selectedLayer);
       }
@@ -3504,6 +3893,7 @@
     function selectLayer(name) {
       if (!layerAvailable(name)) return;
       if (name.startsWith('viz:')) { selectVizLayer(name.slice(4)); return; } // controls follow the selection
+      if (name.startsWith('logo:')) { selectLogoLayer(name.slice(5)); return; }
       selectedLayer = name;
       syncLayoutEditor();
     }
@@ -3594,11 +3984,18 @@
         if (r - l < LAYOUT_MIN_SIZE) { if (handle.includes('w')) l = r - LAYOUT_MIN_SIZE; else r = l + LAYOUT_MIN_SIZE; }
         if (b - t < LAYOUT_MIN_SIZE) { if (handle.includes('n')) t = b - LAYOUT_MIN_SIZE; else b = t + LAYOUT_MIN_SIZE; }
 
-        // Shift + corner: keep the original proportions, anchored at the opposite corner
-        if (e.shiftKey && handle.length === 2) {
+        // Shift + corner: keep the original proportions, anchored at the opposite corner.
+        // Logo layers keep their proportions by default; Shift unlocks them.
+        const isLogo = layoutDrag.name.startsWith('logo:');
+        const lock = isLogo ? !e.shiftKey : e.shiftKey;
+        if (lock && handle.length === 2) {
           const ratio = start.w / start.h;
           let w = r - l, h = b - t;
           if (w / ratio > h) h = w / ratio; else w = h * ratio;
+          if (w < LAYOUT_MIN_SIZE) { w = LAYOUT_MIN_SIZE; h = w / ratio; }
+          if (h < LAYOUT_MIN_SIZE) { h = LAYOUT_MIN_SIZE; w = h * ratio; }
+          if (w > 2) { w = 2; h = w / ratio; }
+          if (h > 2) { h = 2; w = h * ratio; }
           if (handle.includes('w')) l = r - w; else r = l + w;
           if (handle.includes('n')) t = b - h; else b = t + h;
           gx = gy = null;
@@ -3691,6 +4088,7 @@
       initStarfield();
       initAmbientParticles();
       resetVizRuntime();
+      resetLogoRuntime();
       resetBeatEngine();
       cameraFx.punch = 0;
       cameraFx.flash = 0;
@@ -3751,12 +4149,14 @@
 
       // Camera punch: scale the frame around its centre (lyrics stay put unless included)
       const punchScale = 1 + ((v.cameraPunch || 0) / 100) * 0.12 * cameraFx.punch;
+      const applyPunch = (c, w, h) => {
+        if (punchScale === 1) return;
+        c.translate(w / 2, h / 2);
+        c.scale(punchScale, punchScale);
+        c.translate(-w / 2, -h / 2);
+      };
       ctx.save();
-      if (punchScale !== 1) {
-        ctx.translate(width / 2, height / 2);
-        ctx.scale(punchScale, punchScale);
-        ctx.translate(-width / 2, -height / 2);
-      }
+      applyPunch(ctx, width, height);
 
       // 1. Draw Background
       drawBackground(ctx, width, height, palette, bassEnergy);
@@ -3789,8 +4189,24 @@
         drawEmbeddedLyrics(ctx, lRect.w, lRect.h, palette, lyricDrive);
         ctx.restore();
       };
-      if (v.punchLyrics) drawLyrics();
       ctx.restore();
+
+      // 3.5 Logo / image layers, back to front (inside the punch only when the layer's "punch" is on)
+      for (const layer of v.logoLayers) {
+        const img = logoImages[layer.id];
+        if (!layer.enabled || !img || !(img.naturalWidth > 0)) continue;
+        ctx.save();
+        if (layer.punch) applyPunch(ctx, width, height);
+        drawLogoLayer(ctx, layer, img, width, height, beatDrive(layer.reactsTo, bassEnergy));
+        ctx.restore();
+      }
+
+      if (v.punchLyrics) {
+        ctx.save();
+        applyPunch(ctx, width, height);
+        drawLyrics();
+        ctx.restore();
+      }
 
       // 4. Flash overlay on strong beats
       const flashAlpha = ((v.flashAmount || 0) / 100) * 0.55 * cameraFx.flash;
@@ -3802,6 +4218,103 @@
         ctx.restore();
       }
       if (!v.punchLyrics) drawLyrics();
+    }
+
+
+    // --- Logo / image layers ---
+    function logoRoundedPath(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h);
+      ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    }
+
+    // Image tinted with the outline colour, drawn around a circle of offsets, then the image on top.
+    // Cached per layer; rebuilt only when the image, drawn size, colour or width changes.
+    function logoOutlinedCanvas(layer, img, dw, dh, px) {
+      const key = `${img.naturalWidth}x${img.naturalHeight}|${(img.src || '').length}|${dw}x${dh}|${layer.outlineColor}|${px}`;
+      const cached = logoOutlineCache.get(layer.id);
+      if (cached && cached.key === key) return cached;
+      const pad = Math.ceil(px) + 1;
+      const c = document.createElement('canvas');
+      c.width = dw + pad * 2;
+      c.height = dh + pad * 2;
+      const cx = c.getContext('2d');
+      const tint = document.createElement('canvas');
+      tint.width = dw; tint.height = dh;
+      const tx = tint.getContext('2d');
+      tx.drawImage(img, 0, 0, dw, dh);
+      tx.globalCompositeOperation = 'source-in';
+      tx.fillStyle = layer.outlineColor;
+      tx.fillRect(0, 0, dw, dh);
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2;
+        cx.drawImage(tint, pad + Math.cos(a) * px, pad + Math.sin(a) * px);
+      }
+      cx.drawImage(img, pad, pad, dw, dh);
+      const entry = { key, canvas: c, pad };
+      logoOutlineCache.set(layer.id, entry);
+      return entry;
+    }
+
+    function drawLogoLayer(ctx, layer, img, width, height, drive) {
+      const id = layer.id;
+      let rt = logoRuntime.get(id);
+      if (!rt) { rt = { angle: 0 }; logoRuntime.set(id, rt); }
+      const anim = layer.animation;
+      if ((anim === 'spin' || anim === 'spinpulse') && frameClock.playing) {
+        rt.angle += Math.PI * 2 * (layer.spinSpeed / 60) * frameClock.dt;
+      }
+      const pulse = (anim === 'pulse' || anim === 'spinpulse') ? 1 + drive * layer.pulseAmount * 0.25 : 1;
+
+      const rect = layerPixelRect('logo:' + id, width, height);
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const shaped = layer.shape === 'circle' || layer.shape === 'rounded';
+      let dw, dh;
+      if (shaped) { dw = dh = Math.max(1, Math.min(rect.w, rect.h)); }
+      else {
+        const sc = Math.min(rect.w / iw, rect.h / ih);
+        dw = Math.max(1, iw * sc); dh = Math.max(1, ih * sc);
+      }
+      const px = Math.min(40, Math.max(0, layer.outlineWidth)) * height / 1080;
+
+      ctx.save();
+      ctx.translate(rect.x + rect.w / 2, rect.y + rect.h / 2);
+      ctx.rotate(layer.rotation * Math.PI / 180 + rt.angle);
+      if (pulse !== 1) ctx.scale(pulse, pulse);
+      ctx.globalAlpha = Math.min(1, Math.max(0, layer.opacity));
+      if (shaped) {
+        const s = Math.min(iw, ih);
+        const sx = (iw - s) / 2, sy = (ih - s) / 2;
+        ctx.save();
+        if (layer.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, dw / 2, 0, Math.PI * 2); }
+        else logoRoundedPath(ctx, -dw / 2, -dh / 2, dw, dh, dw * 0.18);
+        ctx.clip();
+        ctx.drawImage(img, sx, sy, s, s, -dw / 2, -dh / 2, dw, dh);
+        ctx.restore();
+        if (px > 0) {
+          if (layer.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, dw / 2, 0, Math.PI * 2); }
+          else logoRoundedPath(ctx, -dw / 2, -dh / 2, dw, dh, dw * 0.18);
+          ctx.lineWidth = px;
+          ctx.strokeStyle = layer.outlineColor;
+          ctx.stroke();
+        }
+      } else if (px > 0) {
+        const rw = Math.max(1, Math.round(dw)), rh = Math.max(1, Math.round(dh));
+        const o = logoOutlinedCanvas(layer, img, rw, rh, px);
+        const kx = dw / rw, ky = dh / rh;
+        ctx.drawImage(o.canvas, -dw / 2 - o.pad * kx, -dh / 2 - o.pad * ky, o.canvas.width * kx, o.canvas.height * ky);
+      } else {
+        ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+      }
+      ctx.restore();
     }
 
     // --- Background Renderer ---
@@ -6567,7 +7080,7 @@
         const el = document.getElementById(id);
         if (el) controls[id] = el.type === 'checkbox' ? el.checked : el.value;
       }
-      const data = { v: 2, controls, vizLayers: state.visualizer.vizLayers, layers: { turntable: state.visualizer.layers.turntable, lyrics: state.visualizer.layers.lyrics } };
+      const data = { v: 2, controls, vizLayers: state.visualizer.vizLayers, logoLayers: state.visualizer.logoLayers, selectedLogoLayer: state.visualizer.selectedLogoLayer, layers: { turntable: state.visualizer.layers.turntable, lyrics: state.visualizer.layers.lyrics } };
       try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(data)); } catch (e) {}
     }
 
@@ -6602,6 +7115,39 @@
         rotation: clampNum(raw.rotation, -360, 360, 0),
         box: validLayerBox(raw.box) ? { x: raw.box.x, y: raw.box.y, w: raw.box.w, h: raw.box.h } : null
       };
+    }
+
+    function sanitizeLogoLayer(raw, id) {
+      if (!raw || typeof raw !== 'object') return null;
+      const D = LOGO_LAYER_DEFAULTS;
+      return {
+        id,
+        enabled: typeof raw.enabled === 'boolean' ? raw.enabled : D.enabled,
+        shape: LOGO_SHAPES.includes(raw.shape) ? raw.shape : D.shape,
+        outlineColor: typeof raw.outlineColor === 'string' && /^#[0-9a-f]{6}$/i.test(raw.outlineColor) ? raw.outlineColor : D.outlineColor,
+        outlineWidth: clampNum(raw.outlineWidth, 0, 40, D.outlineWidth),
+        opacity: clampNum(raw.opacity, 0, 1, D.opacity),
+        rotation: clampNum(raw.rotation, -180, 180, D.rotation),
+        animation: LOGO_ANIMATIONS.includes(raw.animation) ? raw.animation : D.animation,
+        spinSpeed: clampNum(raw.spinSpeed, -60, 60, D.spinSpeed),
+        reactsTo: VIZ_SOURCES.includes(raw.reactsTo) ? raw.reactsTo : D.reactsTo,
+        pulseAmount: clampNum(raw.pulseAmount, 0, 2, D.pulseAmount),
+        punch: typeof raw.punch === 'boolean' ? raw.punch : D.punch,
+        box: validLayerBox(raw.box) ? { x: raw.box.x, y: raw.box.y, w: raw.box.w, h: raw.box.h } : null
+      };
+    }
+
+    function restoredLogoLayers(data) {
+      const out = [];
+      if (data.v !== 2 || !Array.isArray(data.logoLayers)) return out;
+      const seen = new Set();
+      for (const raw of data.logoLayers) {
+        if (out.length >= MAX_LOGO_LAYERS) break;
+        if (!raw || typeof raw.id !== 'string' || !/^l[123]$/.test(raw.id) || seen.has(raw.id)) continue;
+        const l = sanitizeLogoLayer(raw, raw.id);
+        if (l) { seen.add(l.id); out.push(l); }
+      }
+      return out;
     }
 
     // Builds the layer list from saved data: v2 vizLayers, or the single v1 visualizer
@@ -6660,8 +7206,31 @@
           resetVizRuntime();
           onVizLayersChanged(true);
         }
+        const logos = restoredLogoLayers(data);
+        state.visualizer.logoLayers = logos;
+        state.visualizer.selectedLogoLayer = logos.some(l => l.id === data.selectedLogoLayer) ? data.selectedLogoLayer : (logos[0] ? logos[0].id : null);
+        if (logos.length) {
+          resetLogoRuntime();
+          onLogoLayersChanged(true);
+        }
       } finally {
         settingsRestoring = false;
+      }
+
+      // Logo images (stored separately, one key per slot)
+      for (const l of state.visualizer.logoLayers) {
+        let src = null;
+        try { src = localStorage.getItem(logoStorageKey(l.id)); } catch (e) {}
+        if (!src) continue;
+        const id = l.id;
+        const img = new Image();
+        img.onload = () => {
+          if (!getLogoLayer(id)) return;
+          logoImages[id] = img;
+          logoOutlineCache.delete(id);
+          onLogoLayersChanged(true);
+        };
+        img.src = src;
       }
 
       // Custom turntable cover art (stored separately as a downscaled image)
@@ -6723,6 +7292,7 @@
         localStorage.removeItem(SETTINGS_KEY);
         localStorage.removeItem(COVER_ART_KEY);
         localStorage.removeItem(BG_IMAGE_KEY);
+        for (let n = 1; n <= MAX_LOGO_LAYERS; n++) localStorage.removeItem(LOGO_IMAGE_KEY_PREFIX + n);
       } catch (e) {}
       settingsRestoring = true; // don't re-save the current values while reloading
       location.reload();

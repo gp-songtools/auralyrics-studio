@@ -2,7 +2,9 @@
 // index.html in Chromium with the external services stubbed (the sandbox cannot reach them).
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { execSync } = require('child_process');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -64,4 +66,18 @@ function makeChecker() {
   };
 }
 
-module.exports = { openApp, makeChecker };
+// Local copy of mediabunny.min.mjs for the fast-render check (null when it cannot be installed)
+function findMediabunny() {
+  if (process.env.MEDIABUNNY_BUNDLE && fs.existsSync(process.env.MEDIABUNNY_BUNDLE)) return process.env.MEDIABUNNY_BUNDLE;
+  const dir = path.join(os.tmpdir(), 'aura-mediabunny');
+  const f = path.join(dir, 'node_modules/mediabunny/dist/bundles/mediabunny.min.mjs');
+  if (fs.existsSync(f)) return f;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    execSync('npm i --no-audit --no-fund --prefix ' + JSON.stringify(dir) + ' mediabunny@1.63.0', { stdio: 'ignore' });
+    if (fs.existsSync(f)) return f;
+  } catch (e) {}
+  return null;
+}
+
+module.exports = { openApp, makeChecker, findMediabunny };

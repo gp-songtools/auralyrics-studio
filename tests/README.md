@@ -5,9 +5,10 @@ Plain node scripts (no test runner). They need `playwright` with Chromium instal
 ```
 node tests/viz-layers-core.js   # layer stack data model, migration, limits, runtime state
 node tests/viz-layers-ui.js     # layer list UI, layout editor, round trip, export determinism, layout, perf
+node tests/logo-layers.js       # logo / image layers: list + settings UI, spin/pulse on the kick, transparency, reload, export match, storage, layout
 ```
 
-`tests/serve-and-stub.js` serves the repo on `http://localhost` and stubs the CDN / API hosts (the sandbox cannot reach them).
+`tests/serve-and-stub.js` (also exports `findMediabunny()` for the fast-render checks) serves the repo on `http://localhost` and stubs the CDN / API hosts (the sandbox cannot reach them).
 
 ## Real layout (optional, recommended)
 
@@ -19,5 +20,5 @@ sh tests/build-css.sh                       # writes tests/.tailwind.css (Tailwi
 TAILWIND_CSS=tests/.tailwind.css node tests/viz-layers-ui.js
 ```
 
-`viz-layers-ui.js` builds the CSS itself when `TAILWIND_CSS` is not set and `npx` can fetch tailwindcss; layout and
+`viz-layers-ui.js` and `logo-layers.js` build the CSS itself when `TAILWIND_CSS` is not set and `npx` can fetch tailwindcss; layout and
 pointer-drag checks are skipped if no CSS is available. Screenshots go to `$SHOT_DIR` (default: the OS temp dir).

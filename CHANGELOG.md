@@ -2,10 +2,13 @@
 
 All notable changes to AuraLyrics Studio, newest first. The app has no version numbers, so entries are grouped by date.
 
-## 2026-11-17 — Beat engine, camera punch and flash; visualizer layers
+## 2026-11-17 — Beat engine, camera punch and flash; visualizer and logo layers
 
 ### Added
 
+- **Logos & images** in the Visualizer tab: add up to 3 pictures (a logo, an artist photo, a channel badge) that sit above the visualizers and particles and below the lyrics. Each one can be shown as is (transparent PNGs keep their transparency), as a circle or as a rounded square, with an optional outline in any colour, plus opacity and rotation. Make it **spin**, **pulse** to a part of the song (Kick, Bass, Melody, Vocal or Classic), or both. **Camera punch moves this layer** is on by default; untick it to keep the logo still while the picture punches. Logos look the same in exported videos as in the preview.
+- Each logo is its own box in the layout editor (**Logo 1**, **Logo 2**…). Logo boxes keep their proportions when you drag a corner; hold Shift to resize freely.
+- Your logos are remembered in this browser after a reload. **Remove image**, deleting the logo or **Reset settings** removes the saved copy.
 - **Visualizer layers**: stack up to 6 visualizers in the Visualizer tab. Each layer has its own pattern, **Reacts to**, reactivity, glow and opacity, plus new options: its own **palette** (or follow the global one), **blend** (Normal, Add, Screen), **mirror** left/right and up/down, and **rotation**. Add, duplicate, delete, hide and reorder layers in the new **Layers** list; the top of the list draws in front.
 - Every layer is its own box in the layout editor (**Viz 1**, **Viz 2**…), so you can move and resize each one separately. Selecting a layer in the list or on the canvas selects it in both places.
 - **Beat & Camera** in the Visualizer tab: a shared beat engine that listens separately to the **Kick**, **Bass**, **Melody** and **Vocal** parts of the song, with a **Beat release** slider for how quickly reactions fade.
