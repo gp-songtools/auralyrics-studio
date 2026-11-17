@@ -1,7 +1,7 @@
 ---
 name: sonnet-worker
 description: Use this agent for implementing well-defined features, writing unit tests, refactoring modules, and running build/test commands.
-model: sonnet-5.5
+model: sonnet
 effort: medium
 tools:
   - Read

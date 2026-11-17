@@ -1,7 +1,7 @@
 ---
 name: haiku-helper
 description: Use this agent for small, fast, read-only search and lookups.
-model: haiku-5.5
+model: haiku
 effort: low
 tools:
   - Read
