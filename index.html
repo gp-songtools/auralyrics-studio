@@ -372,9 +372,26 @@
             <span>Visualizer Engine</span>
           </h2>
         <div id="sectionVisuals" class="space-y-4">
+          <!-- Visualizer layers: a stack of up to 6 independent visualizers -->
+          <div id="vizLayersBlock" class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-200">Layers <span id="vizLayerCount" class="font-normal text-slate-500">1/6</span></span>
+              <span class="text-[10px] text-slate-500">Top draws in front</span>
+            </div>
+            <div id="vizLayerList" role="listbox" aria-label="Visualizer layers" class="space-y-1"></div>
+            <div class="grid grid-cols-3 gap-2">
+              <button id="btnVizLayerAdd" type="button" title="Add a visualizer layer" aria-label="Add layer" class="viz-layer-btn min-h-[36px] px-2 rounded-lg bg-pink-500/15 border border-pink-500/40 text-pink-200 text-xs font-semibold hover:bg-pink-500/25 transition">+ Add</button>
+              <button id="btnVizLayerDuplicate" type="button" title="Duplicate the selected layer" aria-label="Duplicate selected layer" class="viz-layer-btn min-h-[36px] px-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-slate-500 transition">Duplicate</button>
+              <button id="btnVizLayerDelete" type="button" title="Delete the selected layer" aria-label="Delete selected layer" class="viz-layer-btn min-h-[36px] px-2 rounded-lg bg-slate-900 border border-slate-700 text-red-300 text-xs font-semibold hover:border-red-500/60 transition">Delete</button>
+            </div>
+          </div>
+
+          <!-- Settings of the selected layer -->
+          <div id="vizLayerSettings" class="space-y-3">
+          <h3 id="vizLayerHeading" class="text-xs font-semibold text-slate-200">Layer settings</h3>
           <!-- Visualizer Mode Preset Selection -->
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-2">Visualizer Pattern</label>
+            <label class="block text-xs font-medium text-slate-300 mb-2">Pattern</label>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <button data-mode="radial" class="viz-mode-btn p-2 rounded-xl bg-pink-500/15 border-2 border-pink-500 text-left transition text-xs flex flex-col justify-between">
                 <span class="font-semibold text-pink-300">Radial Spectrum</span>
@@ -431,10 +448,58 @@
             </div>
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="selectVizReactsTo" class="block text-[11px] text-slate-400 mb-1">Reacts to (this layer)</label>
+              <select id="selectVizReactsTo" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+            </div>
+            <div>
+              <label for="selectVizLayerPalette" class="block text-[11px] text-slate-400 mb-1">Palette (this layer)</label>
+              <select id="selectVizLayerPalette" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500"><option value="">Follow global palette</option></select>
+            </div>
+            <div>
+              <label for="selectVizLayerBlend" class="block text-[11px] text-slate-400 mb-1">Blend</label>
+              <select id="selectVizLayerBlend" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500"><option value="source-over">Normal</option><option value="lighter">Add</option><option value="screen">Screen</option></select>
+            </div>
+            <div class="flex items-end gap-4 pb-1.5">
+              <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-300 min-h-[32px]"><input type="checkbox" id="chkVizMirrorX" class="accent-pink-500 w-4 h-4" /> Mirror X</label>
+              <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-300 min-h-[32px]"><input type="checkbox" id="chkVizMirrorY" class="accent-pink-500 w-4 h-4" /> Mirror Y</label>
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Bass Reactivity</span>
+                <span id="labelReactivity">1.4x</span>
+              </div>
+              <input type="range" id="sliderReactivity" min="0.5" max="2.5" step="0.1" value="1.4" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Glow &amp; Bloom</span>
+                <span id="labelGlow">High</span>
+              </div>
+              <input type="range" id="sliderGlow" min="5" max="35" step="2" value="22" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Visualizer Opacity</span>
+                <span id="labelVizOpacity">100%</span>
+              </div>
+              <input type="range" id="sliderVizOpacity" min="0" max="100" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-400" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Rotation</span>
+                <span id="labelVizRotation">0°</span>
+              </div>
+              <input type="range" id="sliderVizRotation" min="-180" max="180" step="1" value="0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400" />
+            </div>
+          </div>
+          </div>
+
           <!-- Color Themes -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1.5">Color Palette Preset</label>
+              <label for="selectColorTheme" class="block text-xs font-medium text-slate-300 mb-1.5">Global Color Palette</label>
               <select id="selectColorTheme" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
                 <option value="cyberpunk">Cyberpunk (Cyan &amp; Neon Pink)</option>
                 <option value="synthwave">Synthwave (Sunset Purple &amp; Orange)</option>
@@ -555,34 +620,10 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
               <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Bass Reactivity</span>
-                <span id="labelReactivity">1.4x</span>
-              </div>
-              <input type="range" id="sliderReactivity" min="0.5" max="2.5" step="0.1" value="1.4" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Glow &amp; Bloom</span>
-                <span id="labelGlow">High</span>
-              </div>
-              <input type="range" id="sliderGlow" min="5" max="35" step="2" value="22" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
                 <span>Frequency Smoothing</span>
                 <span id="labelSmoothing">0.82</span>
               </div>
               <input type="range" id="sliderSmoothing" min="0.6" max="0.95" step="0.02" value="0.82" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400" />
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span>Visualizer Opacity</span>
-                <span id="labelVizOpacity">100%</span>
-              </div>
-              <input type="range" id="sliderVizOpacity" min="0" max="100" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-400" />
             </div>
           </div>
 
@@ -593,10 +634,6 @@
               <span class="text-[10px] px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-300 border border-pink-500/20">Beat engine</span>
             </div>
             <div class="grid grid-cols-2 gap-x-3 gap-y-2">
-                <div>
-                  <label class="block text-[10px] text-slate-400 mb-1">Visualizer reacts to</label>
-                  <select id="selectVizReactsTo" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
-                </div>
                 <div>
                   <div class="flex justify-between text-[10px] text-slate-400 mb-1">
                     <span>Beat release</span>
@@ -939,9 +976,8 @@
         <!-- Layout Editor Toolbar (visible while editing the layout) -->
         <div id="layoutToolbar" class="hidden mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px]">
           <span class="text-slate-400 font-medium mr-0.5">Layer:</span>
-          <button data-layer-pick="visualizer" class="layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition">Visualizer</button>
-          <button data-layer-pick="turntable" class="layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition">Turntable</button>
-          <button data-layer-pick="lyrics" class="layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition">Lyrics</button>
+          <!-- Layer pick buttons are generated by rebuildLayoutToolbar() -->
+          <span id="layoutPickers" class="contents"></span>
           <span class="flex-1"></span>
           <button id="btnLayoutResetLayer" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition" title="Reset the selected layer to its default position &amp; size">Reset</button>
           <button id="btnLayoutResetAll" class="whitespace-nowrap px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">Reset All</button>
@@ -1386,6 +1422,27 @@
 
   <!-- Application Logic -->
   <script>
+    // --- Visualizer layers: a stack of up to MAX_VIZ_LAYERS independent visualizers ---
+    const MAX_VIZ_LAYERS = 6;
+    const VIZ_MODES = ['radial', 'equalizer', 'waveform', 'nebula', 'aurora', 'dualring', 'pulserings', 'mirrorbars', 'inferno', 'spiralburst', 'vumeter', 'ledmeter', 'dotspectrum'];
+    const VIZ_BLENDS = ['source-over', 'lighter', 'screen'];
+    const VIZ_BOX_COLORS = ['#22d3ee', '#a78bfa', '#34d399', '#60a5fa', '#fb923c', '#f87171'];
+    const VIZ_SOURCES = ['classic', 'kick', 'bass', 'melody', 'vocal'];
+    const VIZ_LAYER_DEFAULTS = {
+      enabled: true,
+      mode: 'radial',
+      reactsTo: 'classic', // Beat engine source: classic bass energy, or kick / bass / melody / vocal
+      reactivity: 1.4,
+      opacity: 1, // 0-1
+      glow: 22,
+      palette: null, // null = the global colour theme, else a PALETTES key (incl. custom 'my:...' palettes)
+      blend: 'source-over',
+      mirrorX: false,
+      mirrorY: false,
+      rotation: 0, // degrees
+      box: null // layout rect {x, y, w, h} as frame fractions; null = default (full frame)
+    };
+
     // --- Application State ---
     const state = {
       audio: {
@@ -1405,15 +1462,12 @@
         currentIndex: -1
       },
       visualizer: {
-        mode: 'radial', // radial, equalizer, waveform, nebula, aurora, dualring, pulserings, mirrorbars, inferno, spiralburst, vumeter, ledmeter, dotspectrum
+        // Visualizer layers, back to front (index 0 is drawn first). Each: {id, ...VIZ_LAYER_DEFAULTS}
+        vizLayers: [{ id: 'v1', ...VIZ_LAYER_DEFAULTS }],
+        selectedVizLayer: 'v1',
         theme: 'cyberpunk',
         bgStyle: 'space',
-        reactivity: 1.4,
-        glow: 22,
         smoothing: 0.82,
-        opacity: 1, // visualizer layer opacity (0-1)
-        // Shared beat engine (see BEAT_BANDS): 'classic' = original bass energy, or kick/bass/melody/vocal
-        vizReactsTo: 'classic',
         beatRelease: 130, // envelope release in ms
         cameraPunch: 0, // 0-100, 0 = off
         flashAmount: 0, // 0-100, 0 = off
@@ -1454,7 +1508,8 @@
         turntableAngle: 0,
         turntableImage: null,
         // Per-layer placement as fractions of the frame {x, y, w, h}; null = default placement
-        layers: { visualizer: null, turntable: null, lyrics: null }
+        // (visualizer layers keep their own box; see state.visualizer.vizLayers)
+        layers: { turntable: null, lyrics: null }
       },
       export: {
         format: 'mp4',
@@ -2699,15 +2754,21 @@
     });
 
     // Visualizer Preset Mode Buttons
+    // These controls edit the selected visualizer layer
+    function markVizModeButton(mode) {
+      vizModeButtons.forEach(b => {
+        const on = b.getAttribute('data-mode') === mode;
+        b.className = on
+          ? 'viz-mode-btn p-2 rounded-xl bg-pink-500/15 border-2 border-pink-500 text-left transition text-xs flex flex-col justify-between'
+          : 'viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between';
+        b.querySelector('span:first-child').className = on ? 'font-semibold text-pink-300' : 'font-semibold text-slate-200';
+      });
+    }
+    const glowLabelFor = (g) => (g > 25 ? 'Intense' : (g > 15 ? 'High' : 'Soft'));
     vizModeButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        vizModeButtons.forEach(b => {
-          b.className = 'viz-mode-btn p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-left transition text-xs flex flex-col justify-between';
-          b.querySelector('span:first-child').className = 'font-semibold text-slate-200';
-        });
-        btn.className = 'viz-mode-btn p-2 rounded-xl bg-pink-500/15 border-2 border-pink-500 text-left transition text-xs flex flex-col justify-between';
-        btn.querySelector('span:first-child').className = 'font-semibold text-pink-300';
-        state.visualizer.mode = btn.getAttribute('data-mode');
+        const layer = getSelectedVizLayer();
+        if (layer) setVizLayerProp(layer.id, 'mode', btn.getAttribute('data-mode'));
       });
     });
 
@@ -2715,18 +2776,23 @@
     selectColorTheme.addEventListener('change', (e) => state.visualizer.theme = e.target.value);
     selectBgStyle.addEventListener('change', (e) => state.visualizer.bgStyle = e.target.value);
     sliderReactivity.addEventListener('input', (e) => {
-      state.visualizer.reactivity = parseFloat(e.target.value);
-      labelReactivity.textContent = `${state.visualizer.reactivity}x`;
+      const l = getSelectedVizLayer();
+      if (l) setVizLayerProp(l.id, 'reactivity', parseFloat(e.target.value));
     });
     sliderGlow.addEventListener('input', (e) => {
-      state.visualizer.glow = parseInt(e.target.value, 10);
-      labelGlow.textContent = state.visualizer.glow > 25 ? 'Intense' : (state.visualizer.glow > 15 ? 'High' : 'Soft');
+      const l = getSelectedVizLayer();
+      if (l) setVizLayerProp(l.id, 'glow', parseInt(e.target.value, 10));
     });
     const sliderVizOpacity = document.getElementById('sliderVizOpacity');
     const labelVizOpacity = document.getElementById('labelVizOpacity');
     sliderVizOpacity.addEventListener('input', (e) => {
-      state.visualizer.opacity = parseInt(e.target.value, 10) / 100;
-      labelVizOpacity.textContent = `${e.target.value}%`;
+      const l = getSelectedVizLayer();
+      if (l) setVizLayerProp(l.id, 'opacity', parseInt(e.target.value, 10) / 100);
+    });
+    const selectVizReactsTo = document.getElementById('selectVizReactsTo');
+    selectVizReactsTo.addEventListener('change', (e) => {
+      const l = getSelectedVizLayer();
+      if (l) setVizLayerProp(l.id, 'reactsTo', e.target.value);
     });
     sliderSmoothing.addEventListener('input', (e) => {
       state.visualizer.smoothing = parseFloat(e.target.value);
@@ -3076,16 +3142,222 @@
     }
     updateCanvasResolution();
 
-    // --- LAYER LAYOUT: movable / resizable Visualizer, Turntable & Lyrics ---
+    // --- VISUALIZER LAYER STACK API ---
+    // Mutating functions all end in onVizLayersChanged() (UI re-sync + settings save).
+    let vizLayerCounter = 1; // ids are 'v' + counter and never reused within a session
+    function nextVizLayerId() {
+      for (const l of state.visualizer.vizLayers) {
+        const n = parseInt(String(l.id).slice(1), 10);
+        if (n > vizLayerCounter) vizLayerCounter = n;
+      }
+      return 'v' + (++vizLayerCounter);
+    }
+    function getVizLayer(id) { return state.visualizer.vizLayers.find(l => l.id === id) || null; }
+    function getSelectedVizLayer() { return getVizLayer(state.visualizer.selectedVizLayer) || state.visualizer.vizLayers[0] || null; }
+
+    function addVizLayer() {
+      const list = state.visualizer.vizLayers;
+      if (list.length >= MAX_VIZ_LAYERS) return null;
+      const off = 0.03 * list.length;
+      const layer = { id: nextVizLayerId(), ...VIZ_LAYER_DEFAULTS, box: { x: off, y: off, w: 1, h: 1 } };
+      list.push(layer);
+      state.visualizer.selectedVizLayer = layer.id;
+      selectedLayer = 'viz:' + layer.id;
+      onVizLayersChanged(true);
+      return layer;
+    }
+
+    function duplicateVizLayer(id) {
+      const list = state.visualizer.vizLayers;
+      const i = list.findIndex(l => l.id === id);
+      if (i < 0 || list.length >= MAX_VIZ_LAYERS) return null;
+      const src = list[i];
+      const base = src.box || { x: 0, y: 0, w: 1, h: 1 };
+      const copy = { ...src, id: nextVizLayerId(), box: { x: base.x + 0.03, y: base.y + 0.03, w: base.w, h: base.h } };
+      list.splice(i + 1, 0, copy);
+      state.visualizer.selectedVizLayer = copy.id;
+      selectedLayer = 'viz:' + copy.id;
+      onVizLayersChanged(true);
+      return copy;
+    }
+
+    function deleteVizLayer(id) {
+      const list = state.visualizer.vizLayers;
+      const i = list.findIndex(l => l.id === id);
+      if (i < 0 || list.length <= 1) return;
+      list.splice(i, 1);
+      vizRuntime.delete(id);
+      if (state.visualizer.selectedVizLayer === id) {
+        const n = list[Math.min(i, list.length - 1)];
+        state.visualizer.selectedVizLayer = n.id;
+        selectedLayer = 'viz:' + n.id;
+      }
+      onVizLayersChanged(true);
+    }
+
+    // dir -1 = toward the back (index 0 is drawn first), +1 = toward the front
+    function moveVizLayer(id, dir) {
+      const list = state.visualizer.vizLayers;
+      const i = list.findIndex(l => l.id === id);
+      const j = i + (dir < 0 ? -1 : 1);
+      if (i < 0 || j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      onVizLayersChanged(true);
+    }
+
+    function setVizLayerProp(id, key, value) {
+      const layer = getVizLayer(id);
+      if (!layer || !(key in VIZ_LAYER_DEFAULTS)) return;
+      layer[key] = value;
+      onVizLayersChanged(key === 'enabled' || key === 'box');
+    }
+
+    function selectVizLayer(id) {
+      if (!getVizLayer(id)) return;
+      state.visualizer.selectedVizLayer = id;
+      selectedLayer = 'viz:' + id;
+      onVizLayersChanged(false);
+    }
+
+    // Single refresh hook. structural = the set / order / enabled state of layers changed.
+    function onVizLayersChanged(structural = true) {
+      if (!getVizLayer(state.visualizer.selectedVizLayer)) state.visualizer.selectedVizLayer = state.visualizer.vizLayers[0].id;
+      if (structural) { rebuildLayoutBoxes(); rebuildLayoutToolbar(); }
+      syncLayoutEditor();
+      syncVizLayerControls();
+      renderVizLayerList();
+      scheduleSettingsSave();
+    }
+
+    // Fills the Visualizer-tab controls from the selected layer
+    function syncVizLayerControls() {
+      const l = getSelectedVizLayer();
+      if (!l) return;
+      markVizModeButton(l.mode);
+      sliderReactivity.value = l.reactivity;
+      labelReactivity.textContent = `${l.reactivity}x`;
+      sliderGlow.value = l.glow;
+      labelGlow.textContent = glowLabelFor(l.glow);
+      sliderVizOpacity.value = Math.round(l.opacity * 100);
+      labelVizOpacity.textContent = `${Math.round(l.opacity * 100)}%`;
+      selectVizReactsTo.value = l.reactsTo;
+      syncVizLayerPaletteOptions();
+      const palSel = document.getElementById('selectVizLayerPalette');
+      palSel.value = l.palette || '';
+      if (palSel.value !== (l.palette || '')) palSel.value = ''; // palette was deleted: the layer falls back to the global one
+      document.getElementById('selectVizLayerBlend').value = l.blend;
+      document.getElementById('chkVizMirrorX').checked = !!l.mirrorX;
+      document.getElementById('chkVizMirrorY').checked = !!l.mirrorY;
+      const rot = Math.round(l.rotation || 0);
+      document.getElementById('sliderVizRotation').value = rot;
+      document.getElementById('labelVizRotation').textContent = `${rot}°`;
+      const idx = state.visualizer.vizLayers.indexOf(l);
+      document.getElementById('vizLayerHeading').textContent = `Layer settings \u2014 Viz ${idx + 1}`;
+    }
+
+    // Palette override select: "Follow global palette" + a copy of the global preset list (built-in + My Palettes)
+    let vizPaletteSig = '';
+    function syncVizLayerPaletteOptions() {
+      const src = document.getElementById('selectColorTheme');
+      const sig = [...src.querySelectorAll('option')].map(o => o.value + '=' + o.textContent).join('|');
+      if (sig === vizPaletteSig) return;
+      vizPaletteSig = sig;
+      const sel = document.getElementById('selectVizLayerPalette');
+      sel.textContent = '';
+      sel.add(new Option('Follow global palette', ''));
+      for (const n of src.children) sel.appendChild(n.cloneNode(true));
+    }
+    new MutationObserver(() => syncVizLayerControls()).observe(document.getElementById('selectColorTheme'), { childList: true, subtree: true, characterData: true });
+
+    // --- Layer list (Visualizer tab): top row = front-most layer ---
+    const VIZ_EYE_ON = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/></svg>';
+    const VIZ_EYE_OFF = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18M10.6 6.1A9.5 9.5 0 0112 5c6 0 9.5 7 9.5 7a15 15 0 01-2.6 3.4M6.5 6.8C4 8.5 2.5 12 2.5 12S6 19 12 19c1.4 0 2.7-.3 3.8-.8"/></svg>';
+    const vizModeNames = {};
+    document.querySelectorAll('.viz-mode-btn').forEach(b => { vizModeNames[b.dataset.mode] = b.querySelector('span').textContent; });
+    let vizListSig = '';
+    function renderVizLayerList() {
+      const list = document.getElementById('vizLayerList');
+      if (!list) return;
+      const layers = state.visualizer.vizLayers;
+      const sel = getSelectedVizLayer();
+      const sig = layers.map(l => `${l.id}:${l.mode}:${l.enabled ? 1 : 0}`).join(',') + '|' + (sel ? sel.id : '');
+      if (sig !== vizListSig) { // slider ticks never change this, so the DOM is only rebuilt for structural edits
+        vizListSig = sig;
+        list.textContent = '';
+        for (let i = layers.length - 1; i >= 0; i--) {
+          const l = layers[i];
+          const row = document.createElement('div');
+          row.className = 'viz-layer-row flex items-center gap-1 rounded-lg border px-1 ' + (sel && l.id === sel.id ? 'bg-pink-500/15 border-pink-500' : 'bg-slate-900 border-slate-800 hover:border-slate-700') + (l.enabled ? '' : ' opacity-60');
+          row.dataset.layerId = l.id;
+          row.setAttribute('role', 'option');
+          row.setAttribute('aria-selected', sel && l.id === sel.id ? 'true' : 'false');
+          row.tabIndex = 0;
+          const swatch = VIZ_BOX_COLORS[i % VIZ_BOX_COLORS.length];
+          row.innerHTML =
+            `<button type="button" data-act="toggle" aria-pressed="${l.enabled}" title="${l.enabled ? 'Hide' : 'Show'} Viz ${i + 1}" aria-label="${l.enabled ? 'Hide' : 'Show'} Viz ${i + 1}" class="viz-layer-btn shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-slate-300 hover:bg-slate-800">${l.enabled ? VIZ_EYE_ON : VIZ_EYE_OFF}</button>` +
+            `<span class="shrink-0 w-2 h-2 rounded-full" style="background:${swatch}" aria-hidden="true"></span>` +
+            `<span class="flex-1 min-w-0 truncate text-xs"><span class="font-semibold text-slate-100">Viz ${i + 1}</span> <span class="text-slate-400">${vizModeNames[l.mode] || l.mode}</span></span>` +
+            `<button type="button" data-act="up" ${i === layers.length - 1 ? 'disabled' : ''} title="Move Viz ${i + 1} toward the front" aria-label="Move Viz ${i + 1} up (toward the front)" class="viz-layer-btn shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-slate-300 hover:bg-slate-800 disabled:opacity-30"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg></button>` +
+            `<button type="button" data-act="down" ${i === 0 ? 'disabled' : ''} title="Move Viz ${i + 1} toward the back" aria-label="Move Viz ${i + 1} down (toward the back)" class="viz-layer-btn shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-slate-300 hover:bg-slate-800 disabled:opacity-30"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>`;
+          list.appendChild(row);
+        }
+      }
+      document.getElementById('vizLayerCount').textContent = `${layers.length}/${MAX_VIZ_LAYERS}`;
+      document.getElementById('btnVizLayerAdd').disabled = layers.length >= MAX_VIZ_LAYERS;
+      document.getElementById('btnVizLayerDuplicate').disabled = layers.length >= MAX_VIZ_LAYERS;
+      document.getElementById('btnVizLayerDelete').disabled = layers.length <= 1;
+    }
+
+    (function wireVizLayerList() {
+      const list = document.getElementById('vizLayerList');
+      list.addEventListener('click', (e) => {
+        const row = e.target.closest('.viz-layer-row');
+        if (!row) return;
+        const id = row.dataset.layerId;
+        const act = e.target.closest('[data-act]')?.dataset.act;
+        if (act === 'toggle') { const l = getVizLayer(id); if (l) setVizLayerProp(id, 'enabled', !l.enabled); }
+        else if (act === 'up') moveVizLayer(id, 1);
+        else if (act === 'down') moveVizLayer(id, -1);
+        selectVizLayer(id);
+      });
+      list.addEventListener('keydown', (e) => {
+        const row = e.target.closest('.viz-layer-row');
+        if (!row || e.target !== row) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); selectVizLayer(row.dataset.layerId); }
+      });
+      document.getElementById('btnVizLayerAdd').addEventListener('click', () => addVizLayer());
+      document.getElementById('btnVizLayerDuplicate').addEventListener('click', () => { const l = getSelectedVizLayer(); if (l) duplicateVizLayer(l.id); });
+      document.getElementById('btnVizLayerDelete').addEventListener('click', () => { const l = getSelectedVizLayer(); if (l) deleteVizLayer(l.id); });
+      const bind = (id, evt, key, read) => document.getElementById(id).addEventListener(evt, (e) => {
+        const l = getSelectedVizLayer();
+        if (l) setVizLayerProp(l.id, key, read(e.target));
+      });
+      bind('selectVizLayerPalette', 'change', 'palette', (el) => el.value || null);
+      bind('selectVizLayerBlend', 'change', 'blend', (el) => el.value);
+      bind('chkVizMirrorX', 'change', 'mirrorX', (el) => el.checked);
+      bind('chkVizMirrorY', 'change', 'mirrorY', (el) => el.checked);
+      bind('sliderVizRotation', 'input', 'rotation', (el) => parseInt(el.value, 10));
+    })();
+    syncVizLayerControls();
+    renderVizLayerList();
+
+    // --- LAYER LAYOUT: movable / resizable visualizer layers, Turntable & Lyrics ---
     // Boxes are stored as fractions of the frame, so a layout survives resolution / aspect changes.
-    const LAYOUT_LAYERS = {
-      visualizer: { label: 'Visualizer', color: '#22d3ee' },
+    // Layout item names: 'viz:<layer id>' for each visualizer layer, plus 'turntable' and 'lyrics'.
+    const LAYOUT_FIXED = {
       turntable: { label: 'Turntable', color: '#fbbf24' },
       lyrics: { label: 'Lyrics', color: '#f472b6' }
     };
     const TURNTABLE_BOX_FRACTION = 0.19 / 0.46; // default box hugs the disc at 100% scale
     const LAYOUT_MIN_SIZE = 0.04;
     const LAYOUT_SNAP = 0.012;
+
+    // Every positionable item in stacking order: [{name, label, color}]
+    function layoutItems() {
+      const items = state.visualizer.vizLayers.map((l, i) => ({ name: 'viz:' + l.id, label: 'Viz ' + (i + 1), color: VIZ_BOX_COLORS[i % VIZ_BOX_COLORS.length] }));
+      for (const [name, meta] of Object.entries(LAYOUT_FIXED)) items.push({ name, ...meta });
+      return items;
+    }
 
     function defaultLayerBox(name, W, H) {
       if (name === 'turntable') {
@@ -3096,7 +3368,20 @@
     }
 
     function getLayerBox(name, W, H) {
+      if (name.startsWith('viz:')) {
+        const l = getVizLayer(name.slice(4));
+        return (l && l.box) || defaultLayerBox(name, W, H);
+      }
       return state.visualizer.layers[name] || defaultLayerBox(name, W, H);
+    }
+
+    function setLayerBox(name, box) {
+      if (name.startsWith('viz:')) {
+        const l = getVizLayer(name.slice(4));
+        if (l) l.box = box;
+      } else {
+        state.visualizer.layers[name] = box;
+      }
     }
 
     function layerPixelRect(name, W, H) {
@@ -3107,10 +3392,11 @@
     // var (not let) so renderFrame can read it safely before this block has run
     var layoutEditing = false;
     let editingBeforeRecording = false;
-    let selectedLayer = 'visualizer';
+    let selectedLayer = 'viz:' + state.visualizer.selectedVizLayer;
     let layoutDrag = null;
     const layoutEditor = document.getElementById('layoutEditor');
     const layoutToolbar = document.getElementById('layoutToolbar');
+    const layoutPickers = document.getElementById('layoutPickers');
     const btnEditLayout = document.getElementById('btnEditLayout');
     const labelEditLayout = document.getElementById('labelEditLayout');
     const iconEditLayoutGrid = document.getElementById('iconEditLayoutGrid');
@@ -3120,20 +3406,42 @@
     const guideH = document.createElement('div');
     guideV.className = 'layout-guide v';
     guideH.className = 'layout-guide h';
-
-    for (const [name, meta] of Object.entries(LAYOUT_LAYERS)) {
-      const box = document.createElement('div');
-      box.className = 'layout-box';
-      box.dataset.layer = name;
-      box.style.setProperty('--c', meta.color);
-      box.innerHTML = `<span class="lb-tag">${meta.label}</span>` +
-        ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].map(h => `<span class="lb-h" data-h="${h}"></span>`).join('');
-      layoutEditor.appendChild(box);
-      layoutBoxes[name] = box;
-    }
     layoutEditor.append(guideV, guideH);
 
+    // (Re)builds the overlay boxes from layoutItems(); safe to call repeatedly
+    function rebuildLayoutBoxes() {
+      layoutEditor.querySelectorAll('.layout-box').forEach(el => el.remove());
+      for (const k of Object.keys(layoutBoxes)) delete layoutBoxes[k];
+      for (const item of layoutItems()) {
+        const box = document.createElement('div');
+        box.className = 'layout-box';
+        box.dataset.layer = item.name;
+        box.style.setProperty('--c', item.color);
+        box.innerHTML = `<span class="lb-tag">${item.label}</span>` +
+          ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].map(h => `<span class="lb-h" data-h="${h}"></span>`).join('');
+        layoutEditor.insertBefore(box, guideV);
+        layoutBoxes[item.name] = box;
+      }
+    }
+
+    // (Re)builds the Layer: pick buttons from layoutItems()
+    function rebuildLayoutToolbar() {
+      layoutPickers.textContent = '';
+      for (const item of layoutItems()) {
+        const btn = document.createElement('button');
+        btn.className = 'layer-pick whitespace-nowrap px-2 py-1 rounded-lg border border-slate-700 font-semibold transition';
+        btn.dataset.layerPick = item.name;
+        btn.textContent = item.label;
+        layoutPickers.appendChild(btn);
+      }
+    }
+    layoutPickers.addEventListener('click', (e) => {
+      const btn = e.target.closest('.layer-pick');
+      if (btn) selectLayer(btn.dataset.layerPick);
+    });
+
     function layerAvailable(name) {
+      if (name.startsWith('viz:')) return !!getVizLayer(name.slice(4));
       return name !== 'turntable' || state.visualizer.turntableEnabled;
     }
 
@@ -3148,7 +3456,12 @@
       layoutEditor.style.width = `${dw}px`;
       layoutEditor.style.height = `${dh}px`;
 
-      if (!layerAvailable(selectedLayer)) selectedLayer = 'visualizer';
+      if (!layerAvailable(selectedLayer)) {
+        const sel = getSelectedVizLayer();
+        selectedLayer = 'viz:' + sel.id;
+      }
+      const items = layoutItems();
+      const colors = Object.fromEntries(items.map(i => [i.name, i.color]));
       for (const [name, box] of Object.entries(layoutBoxes)) {
         const b = getLayerBox(name, W, H);
         box.style.left = `${b.x * 100}%`;
@@ -3156,15 +3469,17 @@
         box.style.width = `${b.w * 100}%`;
         box.style.height = `${b.h * 100}%`;
         box.style.display = layerAvailable(name) ? '' : 'none';
+        const hidden = name.startsWith('viz:') && !getVizLayer(name.slice(4)).enabled;
+        box.style.opacity = hidden ? '0.4' : '';
         box.classList.toggle('selected', name === selectedLayer);
       }
       document.querySelectorAll('.layer-pick').forEach(btn => {
         const name = btn.dataset.layerPick;
         const active = name === selectedLayer;
-        const meta = LAYOUT_LAYERS[name];
-        btn.style.background = active ? meta.color : '';
+        const color = colors[name];
+        btn.style.background = active ? color : '';
         btn.style.color = active ? '#0b1020' : (layerAvailable(name) ? '#cbd5e1' : '#475569');
-        btn.style.borderColor = active ? meta.color : '';
+        btn.style.borderColor = active ? color : '';
         btn.disabled = !layerAvailable(name);
         btn.title = layerAvailable(name) ? '' : 'Enable the Rotating Turntable to position it';
       });
@@ -3188,12 +3503,13 @@
 
     function selectLayer(name) {
       if (!layerAvailable(name)) return;
+      if (name.startsWith('viz:')) { selectVizLayer(name.slice(4)); return; } // controls follow the selection
       selectedLayer = name;
       syncLayoutEditor();
     }
 
     function resetLayer(name) {
-      state.visualizer.layers[name] = null;
+      setLayerBox(name, null);
       syncLayoutEditor();
       scheduleSettingsSave();
     }
@@ -3201,8 +3517,9 @@
     btnEditLayout.addEventListener('click', () => setLayoutEditing(!layoutEditing));
     document.getElementById('btnLayoutDone').addEventListener('click', () => setLayoutEditing(false));
     document.getElementById('btnLayoutResetLayer').addEventListener('click', () => resetLayer(selectedLayer));
-    document.getElementById('btnLayoutResetAll').addEventListener('click', () => Object.keys(LAYOUT_LAYERS).forEach(resetLayer));
-    document.querySelectorAll('.layer-pick').forEach(btn => btn.addEventListener('click', () => selectLayer(btn.dataset.layerPick)));
+    document.getElementById('btnLayoutResetAll').addEventListener('click', () => layoutItems().forEach(i => resetLayer(i.name)));
+    rebuildLayoutBoxes();
+    rebuildLayoutToolbar();
 
     // Snaps a value to the nearest target (frame edges / centre) within LAYOUT_SNAP
     function snapTo(value, targets) {
@@ -3289,7 +3606,7 @@
         box = { x: l, y: t, w: r - l, h: b - t };
       }
 
-      state.visualizer.layers[layoutDrag.name] = box;
+      setLayerBox(layoutDrag.name, box);
       showGuide(guideV, gx, true);
       showGuide(guideH, gy, false);
       syncLayoutEditor();
@@ -3304,7 +3621,12 @@
     layoutEditor.addEventListener('pointerup', endLayoutDrag);
     layoutEditor.addEventListener('pointercancel', endLayoutDrag);
     layoutEditor.addEventListener('dblclick', (e) => {
-      const box = e.target.closest('.layout-box');
+      let box = e.target.closest('.layout-box');
+      if (!box && layoutBoxes[selectedLayer]) {
+        // The drag captures the pointer, so the browser reports the editor itself as the target: use the selected box under the pointer
+        const r = layoutBoxes[selectedLayer].getBoundingClientRect();
+        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) box = layoutBoxes[selectedLayer];
+      }
       if (box) resetLayer(box.dataset.layer);
     });
 
@@ -3314,7 +3636,7 @@
       const b = { ...getLayerBox(selectedLayer, W, H) };
       b.x = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - b.w, b.x + dx));
       b.y = Math.min(1 - LAYOUT_MIN_SIZE, Math.max(LAYOUT_MIN_SIZE - b.h, b.y + dy));
-      state.visualizer.layers[selectedLayer] = b;
+      setLayerBox(selectedLayer, b);
       syncLayoutEditor();
       scheduleSettingsSave();
     }
@@ -3368,12 +3690,7 @@
       rng = mulberry32(ANIMATION_SEED);
       initStarfield();
       initAmbientParticles();
-      Object.assign(pulseRingState, { level: 0, floor: 1, ceil: 0, prevNorm: 0, lastHit: -Infinity, waves: [] });
-      infernoPeaks.length = 0;
-      ledPeaks = [];
-      dotLevels = [];
-      vuState.level = -20;
-      vuState.peakUntil = 0;
+      resetVizRuntime();
       resetBeatEngine();
       cameraFx.punch = 0;
       cameraFx.flash = 0;
@@ -3421,17 +3738,12 @@
 
       const v = state.visualizer;
       const palette = PALETTES[v.theme] || PALETTES.cyberpunk;
-      const reactivity = v.reactivity;
-      const glowAmt = v.glow;
 
       // Beat engine + camera effects advance exactly once per frame
       updateBeatEngine(frame.playing);
       updateCameraFx();
 
       // Each layer follows its own "Reacts to" source (Classic keeps the original bass energy)
-      const vizSource = v.vizReactsTo || 'classic';
-      vizSpectrumRange = vizSource === 'classic' ? FULL_SPECTRUM_HZ : BEAT_BANDS[vizSource];
-      const vizDrive = beatDrive(vizSource, bassEnergy);
       const particleDrive = beatDrive(v.particleReactsTo, bassEnergy) * (v.particleReactivity ?? 1);
       const turntableDrive = beatDrive(v.turntableReactsTo, bassEnergy) * (v.turntableBounce ?? 1);
       const lyricDrive = beatDrive(v.lyricReactsTo, bassEnergy) * (v.lyricBounceAmount ?? 1);
@@ -3449,62 +3761,11 @@
       // 1. Draw Background
       drawBackground(ctx, width, height, palette, bassEnergy);
 
-      // 2. Draw Active Visualizer Mode
-      const vRect = layerPixelRect('visualizer', width, height);
-      // Reduced opacity renders into an offscreen layer, then composites it at the chosen alpha
-      const vizOpacity = state.visualizer.opacity ?? 1;
-      const vctx = vizOpacity < 1 ? getVizLayerCtx(width, height) : ctx;
-      vctx.save();
-      vctx.translate(vRect.x, vRect.y);
-      switch (state.visualizer.mode) {
-        case 'radial':
-          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, reactivity, glowAmt);
-          break;
-        case 'equalizer':
-          drawCyberEqualizer(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'waveform':
-          drawNeonWaveform(vctx, vRect.w, vRect.h, palette, vizDrive, glowAmt);
-          break;
-        case 'nebula':
-          drawCosmicVortex(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, glowAmt);
-          break;
-        case 'aurora':
-          drawAuroraRibbons(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, glowAmt);
-          break;
-        case 'dualring':
-          drawDualInfinity(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, glowAmt);
-          break;
-        case 'pulserings':
-          drawPulseRings(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'mirrorbars':
-          drawMirrorBars(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'inferno':
-          drawInfernoSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'spiralburst':
-          drawSpiralBurst(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'ledmeter':
-          drawLedMeter(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'dotspectrum':
-          drawDotSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        case 'vumeter':
-          drawVuMeter(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
-          break;
-        default:
-          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, reactivity, glowAmt);
+      // 2. Draw the visualizer layers, back to front
+      for (const layer of v.vizLayers) {
+        if (layer.enabled) drawVizLayer(ctx, layer, width, height, palette, bassEnergy, midEnergy);
       }
-      vctx.restore();
-      if (vctx !== ctx && vizOpacity > 0) {
-        ctx.globalAlpha = vizOpacity;
-        ctx.drawImage(vizLayerCanvas, 0, 0);
-        ctx.globalAlpha = 1;
-      }
+      vizSpectrumRange = FULL_SPECTRUM_HZ;
 
       // 2.5 Draw Floating Particles Overlay (if enabled)
       if (state.visualizer.floatingParticles) {
@@ -4095,18 +4356,17 @@
     }
 
     // --- Mode 7: Pulse Rings (bass-reactive core, concentric rings & beat shockwaves) ---
-    const pulseRingState = { level: 0, floor: 1, ceil: 0, prevNorm: 0, lastHit: 0, waves: [] };
-
-    function drawPulseRings(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+    // (state lives per visualizer layer in vizRuntime, see getVizRuntime)
+    function drawPulseRings(ctx, width, height, palette, bassEnergy, reactivity, glowAmt, layer, rt) {
       const cx = width / 2;
       const cy = height / 2;
       const unit = Math.min(width, height);
-      const st = pulseRingState;
+      const st = rt.pulse;
       const now = frameClock.t * 1000;
 
       // Shared beat engine: the kick band (or the visualizer's "Reacts to" band), normalised against
       // the song's own floor/ceiling so the core thumps on quiet mixes and loud masters alike
-      const ringBand = beatEngine.bands[(state.visualizer.vizReactsTo || 'classic') === 'classic' ? 'kick' : state.visualizer.vizReactsTo];
+      const ringBand = beatEngine.bands[layer.reactsTo === 'classic' ? 'kick' : layer.reactsTo];
       if (frameClock.playing) {
         st.level = ringBand.env; // fast attack, "Beat release" decay
       } else {
@@ -4216,9 +4476,8 @@
     }
 
     // --- Mode 9: Inferno Spectrum (dense flame bars with falling peak caps) ---
-    const infernoPeaks = [];
-
-    function drawInfernoSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+    function drawInfernoSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt, layer, rt) {
+      const infernoPeaks = rt.infernoPeaks;
       const bars = 128;
       const baseY = height * 0.9;
       const maxH = height * 0.5;
@@ -4301,7 +4560,6 @@
     }
 
     // --- Mode 11: VU Meter (analog needle gauge with realistic ballistics) ---
-    const vuState = { level: -20, peakUntil: 0 };
     const VU_MIN = -20, VU_MAX = 3;
     const vuPos = (vu) => {
       // Real VU scales are linear in voltage, so the dB marks bunch up toward the top end
@@ -4309,10 +4567,11 @@
       return (Math.pow(10, vu / 20) - lo) / (hi - lo);
     };
 
-    function drawVuMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+    function drawVuMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt, layer, rt) {
+      const vuState = rt.vu;
       // RMS loudness from the time-domain waveform
       let target = VU_MIN - 2;
-      if (state.audio.isPlaying && dataTimeDomainArray) {
+      if (frameClock.playing && dataTimeDomainArray) {
         let sum = 0;
         for (let i = 0; i < dataTimeDomainArray.length; i++) {
           const s = (dataTimeDomainArray[i] - 128) / 128;
@@ -4323,7 +4582,7 @@
         // input gain relative to its 1.4x default
         target = 20 * Math.log10(Math.max(rms, 1e-5)) + 9 + 20 * Math.log10(Math.max(0.1, reactivity) / 1.4);
       }
-      const vuSource = state.visualizer.vizReactsTo || 'classic';
+      const vuSource = layer.reactsTo;
       if (vuSource !== 'classic' && frameClock.playing) target = VU_MIN + beatEngine.bands[vuSource].env * (VU_MAX - VU_MIN);
       target = Math.max(VU_MIN - 2, Math.min(VU_MAX + 1, target));
       vuState.level += (target - vuState.level) * easeK(target > vuState.level ? 0.3 : 0.07);
@@ -4421,9 +4680,7 @@
     }
 
     // --- Mode 12: LED Meter (segmented LED bar spectrum with peak-hold cells) ---
-    let ledPeaks = [];
-
-    function drawLedMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+    function drawLedMeter(ctx, width, height, palette, bassEnergy, reactivity, glowAmt, layer, rt) {
       // Column / row counts follow the box size so cells stay legible when the layer is resized
       const cols = Math.max(12, Math.min(64, Math.round(width / 26)));
       const rows = Math.max(6, Math.min(28, Math.round(height / 22)));
@@ -4432,7 +4689,8 @@
       const cellH = (height - padY * 2) / rows;
       const gapX = Math.max(1, cellW * 0.16);
       const gapY = Math.max(1, cellH * 0.3);
-      if (ledPeaks.length !== cols) ledPeaks = new Array(cols).fill(0);
+      if (rt.ledPeaks.length !== cols) rt.ledPeaks = new Array(cols).fill(0);
+      const ledPeaks = rt.ledPeaks;
 
       const lit = new Path2D(), dim = new Path2D(), peaks = new Path2D();
       for (let c = 0; c < cols; c++) {
@@ -4462,15 +4720,14 @@
     }
 
     // --- Mode 13: Dot Spectrum (glowing level dots riding on thin column lines) ---
-    let dotLevels = [];
-
-    function drawDotSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt) {
+    function drawDotSpectrum(ctx, width, height, palette, bassEnergy, reactivity, glowAmt, layer, rt) {
       const cols = Math.max(16, Math.min(80, Math.round(width / 22)));
       const padX = width * 0.02;
       const top = height * 0.08, bottom = height * 0.92;
       const slot = (width - padX * 2) / cols;
       const radius = Math.max(2.5, Math.min(slot * 0.4, height * 0.06));
-      if (dotLevels.length !== cols) dotLevels = new Array(cols).fill(0);
+      if (rt.dotLevels.length !== cols) rt.dotLevels = new Array(cols).fill(0);
+      const dotLevels = rt.dotLevels;
 
       // Thin column guide lines
       const stems = new Path2D();
@@ -4502,7 +4759,75 @@
       ctx.shadowBlur = 0;
     }
 
-    // Offscreen layer used when the visualizer is drawn with reduced opacity
+    // Per-layer runtime animation state (peaks, ring waves, VU needle...), created on first use
+    const vizRuntime = new Map();
+    function getVizRuntime(id) {
+      let rt = vizRuntime.get(id);
+      if (!rt) {
+        rt = {
+          pulse: { level: 0, floor: 1, ceil: 0, prevNorm: 0, lastHit: -Infinity, waves: [] },
+          infernoPeaks: [],
+          vu: { level: -20, peakUntil: 0 },
+          ledPeaks: [],
+          dotLevels: []
+        };
+        vizRuntime.set(id, rt);
+      }
+      return rt;
+    }
+    function resetVizRuntime() { vizRuntime.clear(); }
+
+    function drawVizMode(vctx, layer, rect, palette, drive, midEnergy, reactivity, glowAmt, rt) {
+      const w = rect.w, h = rect.h;
+      switch (layer.mode) {
+        case 'equalizer': return drawCyberEqualizer(vctx, w, h, palette, drive, reactivity, glowAmt);
+        case 'waveform': return drawNeonWaveform(vctx, w, h, palette, drive, glowAmt);
+        case 'nebula': return drawCosmicVortex(vctx, w, h, palette, drive, midEnergy, glowAmt);
+        case 'aurora': return drawAuroraRibbons(vctx, w, h, palette, drive, midEnergy, glowAmt);
+        case 'dualring': return drawDualInfinity(vctx, w, h, palette, drive, midEnergy, glowAmt);
+        case 'pulserings': return drawPulseRings(vctx, w, h, palette, drive, reactivity, glowAmt, layer, rt);
+        case 'mirrorbars': return drawMirrorBars(vctx, w, h, palette, drive, reactivity, glowAmt);
+        case 'inferno': return drawInfernoSpectrum(vctx, w, h, palette, drive, reactivity, glowAmt, layer, rt);
+        case 'spiralburst': return drawSpiralBurst(vctx, w, h, palette, drive, reactivity, glowAmt);
+        case 'ledmeter': return drawLedMeter(vctx, w, h, palette, drive, reactivity, glowAmt, layer, rt);
+        case 'dotspectrum': return drawDotSpectrum(vctx, w, h, palette, drive, reactivity, glowAmt, layer, rt);
+        case 'vumeter': return drawVuMeter(vctx, w, h, palette, drive, reactivity, glowAmt, layer, rt);
+        default: return drawRadialSpectrum(vctx, w, h, palette, drive, midEnergy, reactivity, glowAmt);
+      }
+    }
+
+    // Draws one visualizer layer inside its layout box, with its own palette, rotation / mirroring,
+    // opacity and blend mode. Plain layers draw straight onto ctx; opacity / blend go via the offscreen layer.
+    function drawVizLayer(ctx, layer, width, height, globalPalette, bassEnergy, midEnergy) {
+      const palette = (layer.palette && PALETTES[layer.palette]) || globalPalette;
+      vizSpectrumRange = layer.reactsTo === 'classic' ? FULL_SPECTRUM_HZ : BEAT_BANDS[layer.reactsTo];
+      const drive = beatDrive(layer.reactsTo, bassEnergy);
+      const rect = layerPixelRect('viz:' + layer.id, width, height);
+      const rt = getVizRuntime(layer.id);
+      const direct = layer.opacity >= 1 && layer.blend === 'source-over';
+      if (!direct && layer.opacity <= 0) return;
+      const vctx = direct ? ctx : getVizLayerCtx(width, height);
+      vctx.save();
+      if (layer.rotation || layer.mirrorX || layer.mirrorY) {
+        const cx = rect.x + rect.w / 2, cy = rect.y + rect.h / 2;
+        vctx.translate(cx, cy);
+        if (layer.rotation) vctx.rotate((layer.rotation * Math.PI) / 180);
+        vctx.scale(layer.mirrorX ? -1 : 1, layer.mirrorY ? -1 : 1);
+        vctx.translate(-cx, -cy);
+      }
+      vctx.translate(rect.x, rect.y);
+      drawVizMode(vctx, layer, rect, palette, drive, midEnergy, layer.reactivity, layer.glow, rt);
+      vctx.restore();
+      if (!direct) {
+        ctx.save();
+        ctx.globalAlpha = layer.opacity;
+        ctx.globalCompositeOperation = layer.blend;
+        ctx.drawImage(vizLayerCanvas, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    // Offscreen layer used when a visualizer layer has reduced opacity or a blend mode
     let vizLayerCanvas = null, vizLayerCtx = null;
     function getVizLayerCtx(width, height) {
       if (!vizLayerCanvas) {
@@ -4525,7 +4850,8 @@
       const motion = state.visualizer.particleMotion || 'drift';
       const unit = Math.min(width, height);
       // Radial & swirl motions centre on the visualizer layer (follows the Layout editor)
-      const vRectP = layerPixelRect('visualizer', width, height);
+      const anchorLayer = state.visualizer.vizLayers.find(l => l.enabled) || state.visualizer.vizLayers[0];
+      const vRectP = layerPixelRect('viz:' + anchorLayer.id, width, height);
       const cxN = (vRectP.x + vRectP.w / 2) / width;
       const cyN = (vRectP.y + vRectP.h / 2) / height;
       const ang = ((state.visualizer.particleDirection || 0) * Math.PI) / 180;
@@ -4927,7 +5253,6 @@
     const pctLabel = (x) => `${Math.round(x * 100)}%`;
     const offOrPct = (x) => (x > 0 ? `${x}%` : 'Off');
     const BEAT_CONTROLS = [
-      ['selectVizReactsTo', 'vizReactsTo', (e) => e.value],
       ['sliderBeatRelease', 'beatRelease', (e) => parseInt(e.value, 10), 'labelBeatRelease', (x) => `${x} ms`],
       ['sliderCameraPunch', 'cameraPunch', (e) => parseInt(e.value, 10), 'labelCameraPunch', offOrPct],
       ['sliderFlash', 'flashAmount', (e) => parseInt(e.value, 10), 'labelFlash', offOrPct],
@@ -6220,7 +6545,7 @@
     const SETTINGS_KEY = 'aura_settings_v1';
     const COVER_ART_KEY = 'aura_cover_art_v1';
     const PERSISTED_CONTROL_IDS = [
-      'selectColorTheme', 'selectBgStyle', 'sliderReactivity', 'sliderGlow', 'sliderSmoothing', 'sliderVizOpacity',
+      'selectColorTheme', 'selectBgStyle', 'sliderSmoothing',
       'checkFloatingParticles', 'selectParticleStyle', 'sliderParticleDensity',
       'selectParticleMotion', 'sliderParticleDirection', 'sliderParticleSpeed',
       'selectBgImageFit', 'sliderBgImageDim', 'sliderBgImageBlur', 'checkBgImagePulse',
@@ -6228,7 +6553,7 @@
       'selectLyricLayout', 'selectLyricFont', 'sliderLyricSize', 'sliderLyricPos',
       'colorLyricFont', 'colorLyricHighlight', 'colorLyricSecondary', 'checkBassBounce', 'checkBackdropPill',
       'exportFormat', 'exportResolution', 'exportFps', 'exportRange', 'volumeSlider',
-      'selectVizReactsTo', 'sliderBeatRelease', 'sliderCameraPunch', 'sliderFlash', 'selectBeatSource', 'selectFlashColor',
+      'sliderBeatRelease', 'sliderCameraPunch', 'sliderFlash', 'selectBeatSource', 'selectFlashColor',
       'checkPunchLyrics', 'selectParticleReactsTo', 'sliderParticleReactivity', 'selectBgPulseReactsTo', 'sliderBgPulseAmount',
       'selectTurntableReactsTo', 'sliderTurntableBounce', 'selectLyricReactsTo', 'sliderLyricBounce'
     ];
@@ -6242,7 +6567,7 @@
         const el = document.getElementById(id);
         if (el) controls[id] = el.type === 'checkbox' ? el.checked : el.value;
       }
-      const data = { v: 1, controls, mode: state.visualizer.mode, layers: state.visualizer.layers };
+      const data = { v: 2, controls, vizLayers: state.visualizer.vizLayers, layers: { turntable: state.visualizer.layers.turntable, lyrics: state.visualizer.layers.lyrics } };
       try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(data)); } catch (e) {}
     }
 
@@ -6256,10 +6581,60 @@
       return b && ['x', 'y', 'w', 'h'].every(k => typeof b[k] === 'number' && isFinite(b[k])) && b.w > 0 && b.h > 0;
     }
 
+    const clampNum = (x, lo, hi, dflt) => (typeof x === 'number' && isFinite(x) ? Math.min(hi, Math.max(lo, x)) : dflt);
+
+    // Validates one saved visualizer layer (whitelisted keys, clamped numbers); returns null if unusable
+    function sanitizeVizLayer(raw, id) {
+      if (!raw || typeof raw !== 'object') return null;
+      const D = VIZ_LAYER_DEFAULTS;
+      return {
+        id,
+        enabled: typeof raw.enabled === 'boolean' ? raw.enabled : D.enabled,
+        mode: VIZ_MODES.includes(raw.mode) ? raw.mode : D.mode,
+        reactsTo: VIZ_SOURCES.includes(raw.reactsTo) ? raw.reactsTo : D.reactsTo,
+        reactivity: clampNum(raw.reactivity, 0.5, 2.5, D.reactivity),
+        opacity: clampNum(raw.opacity, 0, 1, D.opacity),
+        glow: clampNum(raw.glow, 5, 35, D.glow),
+        palette: typeof raw.palette === 'string' && raw.palette ? raw.palette : null,
+        blend: VIZ_BLENDS.includes(raw.blend) ? raw.blend : D.blend,
+        mirrorX: !!raw.mirrorX,
+        mirrorY: !!raw.mirrorY,
+        rotation: clampNum(raw.rotation, -360, 360, 0),
+        box: validLayerBox(raw.box) ? { x: raw.box.x, y: raw.box.y, w: raw.box.w, h: raw.box.h } : null
+      };
+    }
+
+    // Builds the layer list from saved data: v2 vizLayers, or the single v1 visualizer
+    function restoredVizLayers(data) {
+      const out = [];
+      if (data.v === 2 && Array.isArray(data.vizLayers)) {
+        const seen = new Set();
+        for (const raw of data.vizLayers) {
+          if (out.length >= MAX_VIZ_LAYERS) break;
+          let id = raw && typeof raw.id === 'string' && /^v\d+$/.test(raw.id) && !seen.has(raw.id) ? raw.id : null;
+          if (!id) { let n = 1; while (seen.has('v' + n) || data.vizLayers.some(r => r && r.id === 'v' + n)) n++; id = 'v' + n; }
+          const l = sanitizeVizLayer(raw, id);
+          if (l) { seen.add(id); out.push(l); }
+        }
+      } else if (data.v === 1) {
+        const c = data.controls || {};
+        const num = (x) => parseFloat(x);
+        out.push(sanitizeVizLayer({
+          mode: data.mode,
+          reactivity: num(c.sliderReactivity),
+          glow: parseInt(c.sliderGlow, 10),
+          opacity: parseInt(c.sliderVizOpacity, 10) / 100,
+          reactsTo: c.selectVizReactsTo,
+          box: data.layers && data.layers.visualizer
+        }, 'v1'));
+      }
+      return out.filter(Boolean);
+    }
+
     function restoreSettings() {
       let data = null;
       try { data = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch (e) {}
-      if (!data || data.v !== 1) return;
+      if (!data || (data.v !== 1 && data.v !== 2)) return;
       settingsRestoring = true;
       try {
         for (const [id, val] of Object.entries(data.controls || {})) {
@@ -6273,11 +6648,17 @@
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        const modeBtn = data.mode && document.querySelector(`.viz-mode-btn[data-mode="${CSS.escape(data.mode)}"]`);
-        if (modeBtn) modeBtn.click();
-        for (const name of Object.keys(LAYOUT_LAYERS)) {
+        for (const name of ['turntable', 'lyrics']) {
           const b = data.layers && data.layers[name];
           state.visualizer.layers[name] = validLayerBox(b) ? { x: b.x, y: b.y, w: b.w, h: b.h } : null;
+        }
+        const layers = restoredVizLayers(data);
+        if (layers.length) {
+          state.visualizer.vizLayers = layers;
+          state.visualizer.selectedVizLayer = layers[0].id;
+          selectedLayer = 'viz:' + layers[0].id;
+          resetVizRuntime();
+          onVizLayersChanged(true);
         }
       } finally {
         settingsRestoring = false;

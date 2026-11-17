@@ -2,19 +2,28 @@
 
 All notable changes to AuraLyrics Studio, newest first. The app has no version numbers, so entries are grouped by date.
 
-## 2026-11-17 — Beat engine, camera punch and flash
+## 2026-11-17 — Beat engine, camera punch and flash; visualizer layers
 
 ### Added
 
+- **Visualizer layers**: stack up to 6 visualizers in the Visualizer tab. Each layer has its own pattern, **Reacts to**, reactivity, glow and opacity, plus new options: its own **palette** (or follow the global one), **blend** (Normal, Add, Screen), **mirror** left/right and up/down, and **rotation**. Add, duplicate, delete, hide and reorder layers in the new **Layers** list; the top of the list draws in front.
+- Every layer is its own box in the layout editor (**Viz 1**, **Viz 2**…), so you can move and resize each one separately. Selecting a layer in the list or on the canvas selects it in both places.
 - **Beat & Camera** in the Visualizer tab: a shared beat engine that listens separately to the **Kick**, **Bass**, **Melody** and **Vocal** parts of the song, with a **Beat release** slider for how quickly reactions fade.
 - **Camera punch** zooms the whole picture in on each beat and eases back; the lyrics stay still unless you tick **Camera punch moves the lyrics too**. **Flash** briefly lights the picture white or in your palette's accent colour on strong beats. Pick which part of the song drives them with **Punch & flash follow**. Both are off until you turn them up, and both appear in exported videos exactly as in the preview.
 - **Reacts to** choices for the visualizer, particles, background-image pulse, turntable bounce and lyric text pulse, with amount sliders for the particles, background pulse, turntable bounce and text pulse. **Classic** keeps the original bass reaction.
 
 ### Changed
 
+- Your saved visualizer becomes the first layer, so it looks exactly the same after the update.
+- The visualizer's **Reacts to** choice moved from Beat & Camera into the layer settings, since each layer now has its own.
 - The analyser now looks at the song in finer detail, so spectrum bars give the bass several bars of its own instead of a couple.
 - Pulse Rings now uses the shared beat engine, so its shockwaves land on the kick even when a busy bassline plays in the same range.
 - The turntable's bounce has its own amount slider; it no longer depends on the lyrics' text-pulse checkbox.
+
+### Fixed
+
+- The VU Meter needle now moves in fast-rendered videos when it follows the whole song (**Classic**); before, it stayed at rest.
+- Double-clicking a box in the layout editor resets it again.
 
 ## 2026-11-16 — Fast render
 
