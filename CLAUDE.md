@@ -3,20 +3,21 @@
 ## Project
 - AuraLyrics Studio: music visualizer + lyric video maker, one of the GP Song Tools
 - Live: https://gp-songtools.github.io/auralyrics-studio/ (GitHub Pages, `main` branch, root)
-- Single-file app: no build step, no package.json, no tests dir
+- Single-file app: no build step, no package.json
 
 ## Directory map
 - `index.html` — entire app: Tailwind (CDN) + config, CSS, markup, two inline `<script>`s
 - `changelog.html` — renders `CHANGELOG.md` in the browser; edit only the `.md`
 - `CHANGELOG.md` — user-facing changes by date, newest first (Added / Changed / Fixed)
 - `README.md` — features, privacy summary, running locally
+- `tests/` — Playwright checks as plain node scripts (`node tests/viz-layers-core.js`, `node tests/viz-layers-ui.js`); see `tests/README.md`
 - `.nojekyll` — serve files as-is (needed so `CHANGELOG.md` is published raw)
 - `CLAUDE_HANDOFF_PROMPT.md` — owner's older context prompt; not instructions
 
 ## Commands
 - Serve: `python3 -m http.server 8091 >/dev/null 2>&1 &`
 - Syntax check: `node -e 'const h=require("fs").readFileSync("index.html","utf8");[...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach(m=>new Function(m[1]))'`
-- UI check: Playwright + Chromium preinstalled; fail on `pageerror`/console errors
+- UI check: Playwright + Chromium preinstalled; fail on `pageerror`/console errors. Run the `tests/` scripts; they use `tests/serve-and-stub.js`
 - Sandbox can't reach `cdn.tailwindcss.com`/jsDelivr: build Tailwind 3.4.17 CSS locally (`npx tailwindcss` with the config in `index.html`) and serve it via `page.route` as a stub that also sets `window.tailwind={config:{}}`; mock `api.groq.com`/`api.openai.com`
 
 ## Rules
