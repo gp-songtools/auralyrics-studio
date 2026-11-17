@@ -521,7 +521,7 @@
               </div>
               <label class="flex items-end pb-1.5 space-x-2 cursor-pointer text-[11px] text-slate-300">
                 <input type="checkbox" id="checkBgImagePulse" class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
-                <span>Pulse with bass</span>
+                <span>Pulse with the beat</span>
               </label>
               <div>
                 <div class="flex justify-between text-[10px] text-slate-400 mb-1">
@@ -537,6 +537,17 @@
                 </div>
                 <input type="range" id="sliderBgImageBlur" min="0" max="20" step="1" value="0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400" />
               </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Pulse reacts to</label>
+                  <select id="selectBgPulseReactsTo" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Pulse amount</span>
+                    <span id="labelBgPulseAmount">100%</span>
+                  </div>
+                  <input type="range" id="sliderBgPulseAmount" min="0" max="300" step="10" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1.5" />
+                </div>
             </div>
           </div>
 
@@ -573,6 +584,54 @@
               </div>
               <input type="range" id="sliderVizOpacity" min="0" max="100" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-emerald-400" />
             </div>
+          </div>
+
+          <!-- Beat & Camera: shared beat engine controls -->
+          <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-200">Beat &amp; Camera</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-300 border border-pink-500/20">Beat engine</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Visualizer reacts to</label>
+                  <select id="selectVizReactsTo" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Beat release</span>
+                    <span id="labelBeatRelease">130 ms</span>
+                  </div>
+                  <input type="range" id="sliderBeatRelease" min="50" max="600" step="10" value="130" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-slate-400 mt-1.5" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Camera punch</span>
+                    <span id="labelCameraPunch">Off</span>
+                  </div>
+                  <input type="range" id="sliderCameraPunch" min="0" max="100" step="5" value="0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1.5" />
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Flash</span>
+                    <span id="labelFlash">Off</span>
+                  </div>
+                  <input type="range" id="sliderFlash" min="0" max="100" step="5" value="0" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400 mt-1.5" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Punch &amp; flash follow</label>
+                  <select id="selectBeatSource" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="kick" selected>Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Flash color</label>
+                  <select id="selectFlashColor" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="white" selected>White</option><option value="accent">Palette accent</option></select>
+                </div>
+              <label class="col-span-2 flex items-center space-x-2 cursor-pointer text-[11px] text-slate-300">
+                <input type="checkbox" id="checkPunchLyrics" class="rounded bg-slate-950 border-slate-700 text-pink-500 focus:ring-0" />
+                <span>Camera punch moves the lyrics too</span>
+              </label>
+            </div>
+            <p class="text-[10px] text-slate-500">Kick 45&ndash;300 Hz &middot; Bass 20&ndash;140 Hz &middot; Melody 250&ndash;2000 Hz &middot; Vocal 300&ndash;3400 Hz. <strong class="text-slate-400">Classic</strong> keeps the original bass-energy reaction.</p>
           </div>
 
           <!-- New Overlay Effects: Floating Particles & Rotating Turntable -->
@@ -631,6 +690,19 @@
                   <input type="range" id="sliderParticleSpeed" min="0.2" max="4" step="0.1" value="1" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-1.5" />
                 </div>
               </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Reacts to</label>
+                  <select id="selectParticleReactsTo" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Reactivity</span>
+                    <span id="labelParticleReactivity">100%</span>
+                  </div>
+                  <input type="range" id="sliderParticleReactivity" min="0" max="200" step="10" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-400 mt-1.5" />
+                </div>
+              </div>
             </div>
 
             <!-- Rotating Vinyl Turntable Card -->
@@ -662,6 +734,19 @@
                     <span id="labelTurntableSize">100%</span>
                   </div>
                   <input type="range" id="sliderTurntableSize" min="60" max="150" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-purple-400 mt-1" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Bounce reacts to</label>
+                  <select id="selectTurntableReactsTo" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Bounce</span>
+                    <span id="labelTurntableBounce">100%</span>
+                  </div>
+                  <input type="range" id="sliderTurntableBounce" min="0" max="200" step="10" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1.5" />
                 </div>
               </div>
             </div>
@@ -760,12 +845,25 @@
           <div class="flex items-center space-x-6 pt-1 text-xs">
             <label class="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" id="checkBassBounce" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0" />
-              <span class="text-slate-300">Bass-Reactive Text Pulse (Bounces with Kick)</span>
+              <span class="text-slate-300">Beat-Reactive Text Pulse</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" id="checkBackdropPill" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0" />
               <span class="text-slate-300">Frosted Glass Text Backdrop</span>
             </label>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[10px] text-slate-400 mb-1">Text pulse reacts to</label>
+                  <select id="selectLyricReactsTo" class="w-full bg-slate-950 border border-slate-800 rounded p-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-pink-500"><option value="classic" selected>Classic (bass energy)</option><option value="kick">Kick</option><option value="bass">Bass</option><option value="melody">Melody</option><option value="vocal">Vocal</option></select>
+                </div>
+                <div>
+                  <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                    <span>Text pulse amount</span>
+                    <span id="labelLyricBounce">100%</span>
+                  </div>
+                  <input type="range" id="sliderLyricBounce" min="0" max="200" step="10" value="100" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-pink-500 mt-1.5" />
+                </div>
           </div>
         </div>
       </div>
@@ -1314,6 +1412,22 @@
         glow: 22,
         smoothing: 0.82,
         opacity: 1, // visualizer layer opacity (0-1)
+        // Shared beat engine (see BEAT_BANDS): 'classic' = original bass energy, or kick/bass/melody/vocal
+        vizReactsTo: 'classic',
+        beatRelease: 130, // envelope release in ms
+        cameraPunch: 0, // 0-100, 0 = off
+        flashAmount: 0, // 0-100, 0 = off
+        beatSource: 'kick', // drives camera punch & flash
+        flashColor: 'white', // white | accent
+        punchLyrics: false,
+        particleReactsTo: 'classic',
+        particleReactivity: 1,
+        bgPulseReactsTo: 'classic',
+        bgPulseAmount: 1,
+        turntableReactsTo: 'classic',
+        turntableBounce: 1,
+        lyricReactsTo: 'classic',
+        lyricBounceAmount: 1,
         layout: 'kinetic', // kinetic, subtitle, teleprompter, karaoke
         font: 'Inter',
         textSize: 36,
@@ -1420,6 +1534,9 @@
     //   t        seconds of animation time   dt   seconds since the previous frame
     //   songTime position in the song        playing  whether audio data is live
     const frameClock = { t: 0, dt: 1 / 60, songTime: 0, playing: false };
+    // Analyser resolution: 2048 points gives ~21-23 Hz bins, so the bass gets real detail
+    const ANALYSER_FFT_SIZE = 2048;
+    const analysisInfo = { sampleRate: 48000, fftSize: ANALYSER_FFT_SIZE };
     // Per-frame amounts below were tuned at 60 fps; these helpers keep them rate-independent.
     const frameScale = () => frameClock.dt * 60;
     const easeK = (k60) => 1 - Math.pow(1 - k60, frameClock.dt * 60);
@@ -1644,7 +1761,7 @@
         audioCtx = new AudioContextClass();
 
         analyserNode = audioCtx.createAnalyser();
-        analyserNode.fftSize = 512;
+        analyserNode.fftSize = ANALYSER_FFT_SIZE;
         analyserNode.smoothingTimeConstant = state.visualizer.smoothing;
 
         const bufferLength = analyserNode.frequencyBinCount;
@@ -3219,6 +3336,10 @@
       liveClockT += dt;
 
       const playing = !!(analyserNode && state.audio.isPlaying);
+      if (audioCtx && analyserNode) {
+        analysisInfo.sampleRate = audioCtx.sampleRate;
+        analysisInfo.fftSize = analyserNode.fftSize;
+      }
       if (playing) {
         analyserNode.getByteFrequencyData(dataFrequencyArray);
         analyserNode.getByteTimeDomainData(dataTimeDomainArray);
@@ -3253,6 +3374,9 @@
       dotLevels = [];
       vuState.level = -20;
       vuState.peakUntil = 0;
+      resetBeatEngine();
+      cameraFx.punch = 0;
+      cameraFx.flash = 0;
       state.visualizer.turntableAngle = 0;
     }
 
@@ -3281,15 +3405,10 @@
       let trebleEnergy = 0;
 
       if (frame.playing && dataFrequencyArray) {
-        // Calculate average energies for bass (bins 0-15), mids (bins 16-80), highs (bins 81-200)
-        let bSum = 0, mSum = 0, tSum = 0;
-        for (let i = 0; i < 16; i++) bSum += dataFrequencyArray[i];
-        for (let i = 16; i < 80; i++) mSum += dataFrequencyArray[i];
-        for (let i = 81; i < 200; i++) tSum += dataFrequencyArray[i];
-
-        bassEnergy = (bSum / 16) / 255;
-        midEnergy = (mSum / 64) / 255;
-        trebleEnergy = (tSum / 119) / 255;
+        // Classic energies (the original bass / mid / treble ranges, now in Hz)
+        bassEnergy = legacyBandAverage(0, 1380);
+        midEnergy = legacyBandAverage(1380, 6890);
+        trebleEnergy = legacyBandAverage(6980, 17230);
       } else {
         // Idle ambient gentle wave
         const idleTime = frameClock.t * 2;
@@ -3300,9 +3419,32 @@
         if (dataTimeDomainArray) dataTimeDomainArray.fill(128);
       }
 
-      const palette = PALETTES[state.visualizer.theme] || PALETTES.cyberpunk;
-      const reactivity = state.visualizer.reactivity;
-      const glowAmt = state.visualizer.glow;
+      const v = state.visualizer;
+      const palette = PALETTES[v.theme] || PALETTES.cyberpunk;
+      const reactivity = v.reactivity;
+      const glowAmt = v.glow;
+
+      // Beat engine + camera effects advance exactly once per frame
+      updateBeatEngine(frame.playing);
+      updateCameraFx();
+
+      // Each layer follows its own "Reacts to" source (Classic keeps the original bass energy)
+      const vizSource = v.vizReactsTo || 'classic';
+      vizSpectrumRange = vizSource === 'classic' ? FULL_SPECTRUM_HZ : BEAT_BANDS[vizSource];
+      const vizDrive = beatDrive(vizSource, bassEnergy);
+      const particleDrive = beatDrive(v.particleReactsTo, bassEnergy) * (v.particleReactivity ?? 1);
+      const turntableDrive = beatDrive(v.turntableReactsTo, bassEnergy) * (v.turntableBounce ?? 1);
+      const lyricDrive = beatDrive(v.lyricReactsTo, bassEnergy) * (v.lyricBounceAmount ?? 1);
+      bgPulseDrive = beatDrive(v.bgPulseReactsTo, bassEnergy) * (v.bgPulseAmount ?? 1);
+
+      // Camera punch: scale the frame around its centre (lyrics stay put unless included)
+      const punchScale = 1 + ((v.cameraPunch || 0) / 100) * 0.12 * cameraFx.punch;
+      ctx.save();
+      if (punchScale !== 1) {
+        ctx.translate(width / 2, height / 2);
+        ctx.scale(punchScale, punchScale);
+        ctx.translate(-width / 2, -height / 2);
+      }
 
       // 1. Draw Background
       drawBackground(ctx, width, height, palette, bassEnergy);
@@ -3316,46 +3458,46 @@
       vctx.translate(vRect.x, vRect.y);
       switch (state.visualizer.mode) {
         case 'radial':
-          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
+          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, reactivity, glowAmt);
           break;
         case 'equalizer':
-          drawCyberEqualizer(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawCyberEqualizer(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'waveform':
-          drawNeonWaveform(vctx, vRect.w, vRect.h, palette, bassEnergy, glowAmt);
+          drawNeonWaveform(vctx, vRect.w, vRect.h, palette, vizDrive, glowAmt);
           break;
         case 'nebula':
-          drawCosmicVortex(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
+          drawCosmicVortex(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, glowAmt);
           break;
         case 'aurora':
-          drawAuroraRibbons(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
+          drawAuroraRibbons(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, glowAmt);
           break;
         case 'dualring':
-          drawDualInfinity(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, glowAmt);
+          drawDualInfinity(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, glowAmt);
           break;
         case 'pulserings':
-          drawPulseRings(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawPulseRings(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'mirrorbars':
-          drawMirrorBars(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawMirrorBars(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'inferno':
-          drawInfernoSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawInfernoSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'spiralburst':
-          drawSpiralBurst(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawSpiralBurst(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'ledmeter':
-          drawLedMeter(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawLedMeter(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'dotspectrum':
-          drawDotSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawDotSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         case 'vumeter':
-          drawVuMeter(vctx, vRect.w, vRect.h, palette, bassEnergy, reactivity, glowAmt);
+          drawVuMeter(vctx, vRect.w, vRect.h, palette, vizDrive, reactivity, glowAmt);
           break;
         default:
-          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, bassEnergy, midEnergy, reactivity, glowAmt);
+          drawRadialSpectrum(vctx, vRect.w, vRect.h, palette, vizDrive, midEnergy, reactivity, glowAmt);
       }
       vctx.restore();
       if (vctx !== ctx && vizOpacity > 0) {
@@ -3366,7 +3508,7 @@
 
       // 2.5 Draw Floating Particles Overlay (if enabled)
       if (state.visualizer.floatingParticles) {
-        drawFloatingParticles(ctx, width, height, palette, bassEnergy, midEnergy);
+        drawFloatingParticles(ctx, width, height, palette, particleDrive, midEnergy);
       }
 
       // 2.8 Draw Rotating Vinyl Turntable with Circular Clipped Artwork (if enabled)
@@ -3374,22 +3516,38 @@
         const tRect = layerPixelRect('turntable', width, height);
         ctx.save();
         ctx.translate(tRect.x, tRect.y);
-        drawRotatingTurntable(ctx, tRect.w, tRect.h, palette, bassEnergy);
+        drawRotatingTurntable(ctx, tRect.w, tRect.h, palette, turntableDrive);
         ctx.restore();
       }
 
-      // 3. Draw Synchronized Embedded Lyrics
-      const lRect = layerPixelRect('lyrics', width, height);
-      ctx.save();
-      ctx.translate(lRect.x, lRect.y);
-      drawEmbeddedLyrics(ctx, lRect.w, lRect.h, palette, bassEnergy);
+      // 3. Draw Synchronized Embedded Lyrics (inside the punch only when "include lyrics" is on)
+      const drawLyrics = () => {
+        const lRect = layerPixelRect('lyrics', width, height);
+        ctx.save();
+        ctx.translate(lRect.x, lRect.y);
+        drawEmbeddedLyrics(ctx, lRect.w, lRect.h, palette, lyricDrive);
+        ctx.restore();
+      };
+      if (v.punchLyrics) drawLyrics();
       ctx.restore();
+
+      // 4. Flash overlay on strong beats
+      const flashAlpha = ((v.flashAmount || 0) / 100) * 0.55 * cameraFx.flash;
+      if (flashAlpha > 0.002) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, flashAlpha);
+        ctx.fillStyle = v.flashColor === 'accent' ? palette.accent : '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+      }
+      if (!v.punchLyrics) drawLyrics();
     }
 
     // --- Background Renderer ---
     // Background image is pre-rendered (fit + blur) into a cached frame-sized canvas, then
     // composited each frame with optional bass pulse and a dimming layer.
     let bgImageCache = { key: '', canvas: null };
+    let bgPulseDrive = 0; // set each frame by drawScene from the background "Reacts to" choice
 
     function drawBackgroundImage(ctx, width, height, palette, bassEnergy) {
       const img = state.visualizer.bgImage;
@@ -3418,7 +3576,7 @@
         cx.filter = 'none';
         bgImageCache = { key, canvas: c };
       }
-      const pulse = state.visualizer.bgImagePulse ? 1 + bassEnergy * 0.045 : 1;
+      const pulse = state.visualizer.bgImagePulse ? 1 + bgPulseDrive * 0.045 : 1;
       if (pulse !== 1) {
         ctx.drawImage(bgImageCache.canvas, (width - width * pulse) / 2, (height - height * pulse) / 2, width * pulse, height * pulse);
       } else {
@@ -3542,8 +3700,8 @@
       ctx.lineCap = 'round';
 
       for (let i = 0; i < bars; i++) {
-        const binIndex = Math.floor((i < bars / 2 ? i : bars - i) * 1.5) % (dataFrequencyArray ? dataFrequencyArray.length : 128);
-        const val = dataFrequencyArray ? dataFrequencyArray[binIndex] : 0;
+        // Mirrored, log-spaced around the ring (low frequencies at the top)
+        const val = spectrumRaw(((i < bars / 2 ? i : bars - i) / (bars / 2)) * 0.8, 1.6 / bars) * 255;
         const barHeight = Math.max(4, (val / 255) * (Math.min(width, height) * 0.28) * reactivity);
 
         const angle = i * angleStep - Math.PI / 2;
@@ -3583,8 +3741,7 @@
       ctx.shadowColor = palette.primary;
 
       for (let i = 0; i < bars; i++) {
-        const bin = Math.floor(i * 2.5) % (dataFrequencyArray ? dataFrequencyArray.length : 128);
-        const val = dataFrequencyArray ? dataFrequencyArray[bin] : 0;
+        const val = spectrumRaw((i / (bars - 1)) * 0.92, 0.92 / bars) * 255;
         const h = Math.max(6, (val / 255) * maxH * reactivity);
 
         const x = startX + i * barWidth;
@@ -3615,7 +3772,8 @@
     // --- Mode 3: Neon Waveform ---
     function drawNeonWaveform(ctx, width, height, palette, bassEnergy, glowAmt) {
       const cy = height * 0.52;
-      const len = dataTimeDomainArray ? dataTimeDomainArray.length : 256;
+      // Same time span as before (256 samples), whatever the analyser size
+      const len = dataTimeDomainArray ? Math.min(256, dataTimeDomainArray.length) : 256;
       const sliceWidth = width / len;
 
       ctx.shadowBlur = glowAmt;
@@ -3728,7 +3886,7 @@
         const spikes = 32;
         for (let s = 0; s < spikes; s++) {
           const a = (s / spikes) * Math.PI * 2 + (idx === 0 ? frameClock.t : -frameClock.t);
-          const val = dataFrequencyArray ? dataFrequencyArray[s * 3] : 0;
+          const val = spectrumRaw((s / (spikes - 1)) * 0.85, 0.85 / spikes) * 255;
           const len = 5 + (val / 255) * 45;
           ctx.beginPath();
           ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
@@ -3738,20 +3896,189 @@
       });
     }
 
-    // --- Shared spectrum sampling for the bar-based modes ---
-    // Maps t in [0,1] logarithmically across ~90 Hz – 15 kHz so bass doesn't hog half the bars,
-    // with a gentle treble tilt so high bars still move. The analyser's byte values sit high for
-    // loud, mastered music, so a noise floor + power curve restores visible dynamics.
-    function sampleSpectrum(t) {
+    // --- Spectrum helpers (Hz-based; work at any sampleRate / fftSize) ---
+    // analysisInfo describes the data in dataFrequencyArray: the live loop sets it from the
+    // AudioContext, the exporter from the decoded song.
+    function hzToBin(hz) {
+      return (hz * analysisInfo.fftSize) / analysisInfo.sampleRate;
+    }
+
+    // Loudest bin (0-1) across [loHz, hiHz]; interpolated when the range is narrower than a bin
+    function spectrumPeak(loHz, hiHz) {
       if (!dataFrequencyArray) return 0;
-      const minBin = 1;
-      const maxBin = Math.min(dataFrequencyArray.length - 1, 175);
-      const pos = minBin * Math.pow(maxBin / minBin, Math.max(0, Math.min(1, t)));
-      const i = Math.floor(pos);
-      const f = pos - i;
-      const a = dataFrequencyArray[i] || 0;
-      const b = dataFrequencyArray[Math.min(i + 1, maxBin)] || 0;
-      const raw = Math.min(1, ((a + (b - a) * f) / 255) * (1 + t * 0.25));
+      const n = dataFrequencyArray.length;
+      const b0 = hzToBin(loHz), b1 = hzToBin(hiHz);
+      const i0 = Math.max(0, Math.ceil(b0)), i1 = Math.min(n - 1, Math.floor(b1));
+      if (i1 < i0) {
+        const c = Math.min(n - 1.001, Math.max(0, (b0 + b1) / 2));
+        const i = Math.floor(c), fr = c - i;
+        return (dataFrequencyArray[i] * (1 - fr) + dataFrequencyArray[i + 1] * fr) / 255;
+      }
+      let m = 0;
+      for (let i = i0; i <= i1; i++) if (dataFrequencyArray[i] > m) m = dataFrequencyArray[i];
+      return m / 255;
+    }
+
+    // Average over [loHz, hiHz] measured like the original 512-point analyser (each coarse bin is
+    // the loudest of the finer bins it covers), so energy-driven effects keep their feel.
+    function legacyBandAverage(loHz, hiHz) {
+      if (!dataFrequencyArray) return 0;
+      const g = Math.max(1, Math.round(analysisInfo.fftSize / 512));
+      const n = dataFrequencyArray.length;
+      const i0 = Math.floor(hzToBin(loHz) / g) * g;
+      const i1 = Math.min(n, Math.ceil(hzToBin(hiHz) / g) * g);
+      let sum = 0, cnt = 0;
+      for (let i = i0; i < i1; i += g) {
+        let m = 0;
+        for (let k = i; k < i + g && k < n; k++) if (dataFrequencyArray[k] > m) m = dataFrequencyArray[k];
+        sum += m;
+        cnt++;
+      }
+      return cnt ? sum / cnt / 255 : 0;
+    }
+
+    // Frequency range the visualizer draws: the full range, or the band picked in "Reacts to"
+    const FULL_SPECTRUM_HZ = [40, 16000];
+    let vizSpectrumRange = FULL_SPECTRUM_HZ;
+
+    // Raw level (0-1) of a log-spaced slot: t in [0,1] across vizSpectrumRange, w = slot width
+    function spectrumRaw(t, w = 1 / 64) {
+      const [lo, hi] = vizSpectrumRange;
+      const tc = Math.max(0, Math.min(1, t));
+      const f0 = lo * Math.pow(hi / lo, Math.max(0, tc - w / 2));
+      const f1 = lo * Math.pow(hi / lo, Math.min(1, tc + w / 2));
+      return spectrumPeak(f0, f1);
+    }
+
+    // --- SHARED BEAT ENGINE ---
+    // Runs once per frame (inside drawScene, so preview and export match) and exposes, per band:
+    //   level  raw band level      norm  level scaled between the song's own recent floor & ceiling
+    //   env    norm with a fast attack and the "Beat release" decay
+    //   onset  true on the frame a hit starts (spectral flux over an adaptive threshold, gated by
+    //          the recent peak so softer notes in the same band don't count)   strength  0-1
+    const BEAT_BANDS = { kick: [45, 300], bass: [20, 140], melody: [250, 2000], vocal: [300, 3400] };
+    const FLUX_LAG = 0.033; // seconds between the spectra compared for onsets
+    // Analyser bytes are decibels (-100..-30 dB); flux uses linear magnitude so a loud kick stands
+    // well clear of a quieter bass note in the same band
+    const BYTE_TO_LINEAR = new Float32Array(256).map((_, b) => Math.pow(10, ((b / 255) * 70 - 100) / 20) / 0.0316);
+    const ONSET_PEAK_SHARE = 0.45; // a hit must reach this share of the recent peak flux
+    const ONSET_WARMUP = 0.5; // seconds of listening after playback starts before hits count (the
+                              // analyser's smoothing is still ramping up from silence)
+    const beatEngine = { bands: {} };
+
+    function resetBeatEngine() {
+      for (const name of Object.keys(BEAT_BANDS)) {
+        beatEngine.bands[name] = { level: 0, norm: 0, env: 0, floor: 1, ceil: 0, past: [], flux: 0, prevFlux: 0,
+          hist: [], peak: 0, onset: false, strength: 0, lastOnset: -Infinity, listenFrom: null };
+      }
+    }
+    resetBeatEngine();
+
+    function updateBeatEngine(playing) {
+      const dt = frameClock.dt, t = frameClock.t;
+      const releaseSec = Math.max(0.03, (state.visualizer.beatRelease ?? 130) / 1000);
+      const relK = 1 - Math.exp(-dt / releaseSec);
+      const atkK = easeK(0.65);
+      const peakDecay = Math.exp(-dt / 1.5);
+      for (const [name, [lo, hi]] of Object.entries(BEAT_BANDS)) {
+        const b = beatEngine.bands[name];
+        b.onset = false;
+        if (playing && dataFrequencyArray) {
+          const n = dataFrequencyArray.length;
+          const i0 = Math.max(1, Math.round(hzToBin(lo)));
+          const i1 = Math.min(n - 1, Math.max(i0, Math.round(hzToBin(hi))));
+          const cnt = i1 - i0 + 1;
+          const cur = new Float32Array(cnt);
+          let sum = 0;
+          for (let i = i0; i <= i1; i++) { sum += dataFrequencyArray[i] / 255; cur[i - i0] = BYTE_TO_LINEAR[dataFrequencyArray[i]]; }
+          const level = sum / cnt;
+          // Spectral flux against the spectrum ~33 ms earlier (not the previous frame), so detection
+          // is the same at 30 fps, 60 fps or a 144 Hz preview
+          if (b.past.length && b.past[0].bins.length !== cnt) b.past.length = 0;
+          let ref = null;
+          for (let k = b.past.length - 1; k >= 0; k--) { if (b.past[k].t <= t - FLUX_LAG + 1e-6) { ref = b.past[k]; break; } }
+          if (!ref && b.past.length) ref = b.past[0];
+          let flux = 0;
+          const songStart = !b.past.length && frameClock.songTime <= 0.1; // rising from silence
+          if (b.listenFrom === null) b.listenFrom = t;
+          if (ref || songStart) {
+            for (let i = 0; i < cnt; i++) { const d = cur[i] - (ref ? ref.bins[i] : 0); if (d > 0) flux += d; }
+            flux /= cnt;
+          }
+          b.past.push({ t, bins: cur });
+          while (b.past.length > 2 && b.past[1].t <= t - FLUX_LAG + 1e-6) b.past.shift();
+          b.level = level;
+          b.floor = level < b.floor ? level : b.floor + (level - b.floor) * easeK(0.02);
+          b.ceil = level > b.ceil ? level : b.ceil - (b.ceil - level) * easeK(0.008);
+          b.norm = Math.pow(Math.max(0, Math.min(1, (level - b.floor) / Math.max(0.08, b.ceil - b.floor))), 1.5);
+
+          // Adaptive threshold over the last second, never below a share of the recent peak.
+          // The song-start frame (rising from silence) counts as a hit and sets the first peak,
+          // but stays out of the statistics.
+          if (songStart) {
+            if (flux > 0.004) { b.onset = true; b.lastOnset = t; b.strength = 1; b.peak = Math.max(b.peak, flux); }
+            b.prevFlux = flux;
+            b.flux = flux;
+            b.env += (b.norm - b.env) * (b.norm > b.env ? atkK : relK);
+            continue;
+          }
+          b.hist.push(t, flux);
+          while (b.hist.length > 2 && b.hist[0] < t - 1.0) b.hist.splice(0, 2);
+          let mean = 0;
+          const m = b.hist.length / 2;
+          for (let k = 1; k < b.hist.length; k += 2) mean += b.hist[k];
+          mean /= m;
+          let v2 = 0;
+          for (let k = 1; k < b.hist.length; k += 2) v2 += (b.hist[k] - mean) * (b.hist[k] - mean);
+          const sd = Math.sqrt(v2 / m);
+          b.peak = Math.max(flux, b.peak * peakDecay);
+          // Statistics need a few frames of history before they mean anything
+          const threshold = Math.max(m >= 6 ? mean + 1.5 * sd : 0, b.peak * ONSET_PEAK_SHARE, 0.004);
+          // No rising-edge requirement: at low preview frame rates a bass note can sit just above the
+          // threshold on the frame before a kick. The 100 ms re-trigger guard prevents double hits.
+          if (flux > threshold && t - b.lastOnset > 0.1 && t - b.listenFrom >= ONSET_WARMUP) {
+            b.onset = true;
+            b.lastOnset = t;
+            b.strength = Math.min(1, flux / Math.max(1e-6, b.peak));
+          }
+          b.prevFlux = flux;
+          b.flux = flux;
+        } else {
+          b.norm = 0;
+          b.prevFlux = 0;
+          b.past.length = 0;
+          b.listenFrom = null;
+          b.hist.length = 0;
+          b.peak *= peakDecay;
+        }
+        b.env += (b.norm - b.env) * (b.norm > b.env ? atkK : relK);
+      }
+    }
+
+    // Value an effect follows: 'classic' keeps the original bass energy, otherwise a band envelope
+    function beatDrive(source, classic) {
+      if (!source || source === 'classic') return classic;
+      const b = beatEngine.bands[source];
+      return b ? b.env : classic;
+    }
+
+    // Camera punch (zoom on beats) and flash, driven by onsets of the chosen beat source
+    const cameraFx = { punch: 0, flash: 0 };
+    function updateCameraFx() {
+      const v = state.visualizer, dt = frameClock.dt;
+      cameraFx.punch *= Math.exp(-dt / 0.11);
+      cameraFx.flash *= Math.exp(-dt / 0.08);
+      const band = beatEngine.bands[v.beatSource || 'kick'];
+      if (band && band.onset) {
+        if ((v.cameraPunch || 0) > 0) cameraFx.punch = Math.max(cameraFx.punch, 0.55 + 0.45 * band.strength);
+        if ((v.flashAmount || 0) > 0 && band.strength >= 0.6) cameraFx.flash = Math.max(cameraFx.flash, band.strength);
+      }
+    }
+
+    // Shaped level for the bar-based modes: log-spaced slots (so the bass gets several bars) with a
+    // gentle treble tilt, then a noise floor + power curve so loud, mastered music keeps dynamics.
+    function sampleSpectrum(t, w) {
+      const raw = Math.min(1, spectrumRaw(t, w) * (1 + t * 0.25));
       return Math.pow(Math.max(0, (raw - 0.35) / 0.65), 1.7);
     }
 
@@ -3777,29 +4104,23 @@
       const st = pulseRingState;
       const now = frameClock.t * 1000;
 
-      // Kick-drum band (~80-260 Hz), normalised against the track's own running floor/ceiling
-      // so the core thumps on quiet mixes and brick-walled masters alike
-      let norm;
-      if (state.audio.isPlaying && dataFrequencyArray) {
-        const kick = (dataFrequencyArray[1] + dataFrequencyArray[2] + dataFrequencyArray[3]) / (3 * 255);
-        st.floor = kick < st.floor ? kick : st.floor + (kick - st.floor) * easeK(0.02);
-        st.ceil = kick > st.ceil ? kick : st.ceil - (st.ceil - kick) * easeK(0.008);
-        norm = Math.pow(Math.max(0, Math.min(1, (kick - st.floor) / Math.max(0.08, st.ceil - st.floor))), 1.5);
+      // Shared beat engine: the kick band (or the visualizer's "Reacts to" band), normalised against
+      // the song's own floor/ceiling so the core thumps on quiet mixes and loud masters alike
+      const ringBand = beatEngine.bands[(state.visualizer.vizReactsTo || 'classic') === 'classic' ? 'kick' : state.visualizer.vizReactsTo];
+      if (frameClock.playing) {
+        st.level = ringBand.env; // fast attack, "Beat release" decay
       } else {
-        norm = 0.25 + Math.sin(now * 0.002) * 0.15; // idle breathing
+        const idle = 0.25 + Math.sin(now * 0.002) * 0.15; // idle breathing
+        st.level += (idle - st.level) * easeK(idle > st.level ? 0.65 : 0.12);
       }
-
-      // Fast attack / slower release so each kick reads as a visible thump
-      st.level += (norm - st.level) * easeK(norm > st.level ? 0.65 : 0.12);
       const lvl = Math.min(1.6, st.level * (reactivity / 1.4));
       const punch = lvl;
 
-      // Beat detection: the kick crosses up through the top of its range -> emit a shockwave ring
-      if (state.audio.isPlaying && norm > 0.7 && st.prevNorm <= 0.7 && now - st.lastHit > 160) {
+      // Each detected hit emits a shockwave ring
+      if (frameClock.playing && ringBand.onset) {
         st.waves.push({ r: unit * 0.1, alpha: 0.9 });
         st.lastHit = now;
       }
-      st.prevNorm = norm;
 
       const coreR = unit * (0.045 + lvl * 0.055);
 
@@ -3876,7 +4197,7 @@
       ctx.beginPath();
       for (let k = 0; k < total; k++) {
         const d = k < half ? half - 1 - k : k - half; // 0 at the centre, bass in the middle
-        const v = shapeBar(sampleSpectrum(d / (half - 1)), reactivity);
+        const v = shapeBar(sampleSpectrum(d / (half - 1), 1 / half), reactivity);
         const h = Math.max(height * 0.006, v * maxH);
         const x = marginX + k * slot + (slot - barW) / 2;
         addRoundRect(ctx, x, cy - h, barW, h * 2, barW / 2);
@@ -3919,7 +4240,7 @@
       ctx.beginPath();
       const caps = [];
       for (let i = 0; i < bars; i++) {
-        const v = shapeBar(sampleSpectrum(i / (bars - 1)), reactivity);
+        const v = shapeBar(sampleSpectrum(i / (bars - 1), 1 / bars), reactivity);
         const h = Math.max(height * 0.004, v * maxH);
         const x = i * slot + (slot - barW) / 2;
         ctx.rect(x, baseY - h, barW, h);
@@ -3963,7 +4284,7 @@
         for (let i = 0; i < L.n; i++) {
           const s = i / L.n;
           const d = s < 0.5 ? s * 2 : (1 - s) * 2; // mirrored so the ring is seamless
-          const v = shapeBar(sampleSpectrum(d * 0.85), reactivity);
+          const v = shapeBar(sampleSpectrum(d * 0.85, 1.7 / L.n), reactivity);
           const len = Math.max(unit * 0.008, v * L.maxLen);
           const a1 = L.rot + s * Math.PI * 2;
           const a2 = a1 + L.twist * (len / L.maxLen);
@@ -4002,6 +4323,8 @@
         // input gain relative to its 1.4x default
         target = 20 * Math.log10(Math.max(rms, 1e-5)) + 9 + 20 * Math.log10(Math.max(0.1, reactivity) / 1.4);
       }
+      const vuSource = state.visualizer.vizReactsTo || 'classic';
+      if (vuSource !== 'classic' && frameClock.playing) target = VU_MIN + beatEngine.bands[vuSource].env * (VU_MAX - VU_MIN);
       target = Math.max(VU_MIN - 2, Math.min(VU_MAX + 1, target));
       vuState.level += (target - vuState.level) * easeK(target > vuState.level ? 0.3 : 0.07);
       const now = frameClock.t * 1000;
@@ -4113,7 +4436,7 @@
 
       const lit = new Path2D(), dim = new Path2D(), peaks = new Path2D();
       for (let c = 0; c < cols; c++) {
-        const v = shapeBar(sampleSpectrum(c / (cols - 1)), reactivity);
+        const v = shapeBar(sampleSpectrum(c / (cols - 1), 1 / cols), reactivity);
         const on = Math.round(v * rows);
         ledPeaks[c] = Math.max(on, ledPeaks[c] - 0.12 * frameScale());
         const peakRow = Math.round(ledPeaks[c]) - 1;
@@ -4165,7 +4488,7 @@
       // Dots glide toward their level for a fluid, liquid motion
       const dots = new Path2D();
       for (let c = 0; c < cols; c++) {
-        const v = shapeBar(sampleSpectrum(c / (cols - 1)), reactivity);
+        const v = shapeBar(sampleSpectrum(c / (cols - 1), 1 / cols), reactivity);
         dotLevels[c] += (v - dotLevels[c]) * easeK(0.35);
         const x = padX + (c + 0.5) * slot;
         const y = bottom - dotLevels[c] * (bottom - top);
@@ -4306,7 +4629,8 @@
       const cx = width / 2;
       const cy = height / 2;
       const scale = (state.visualizer.turntableSize || 100) / 100;
-      const bounce = state.visualizer.bassBounce ? (1 + bassEnergy * 0.1) : 1;
+      // Turntable bounce has its own amount and "Reacts to" source (bassEnergy = that drive)
+      const bounce = 1 + bassEnergy * 0.1;
       // Disc fills ~92% of its layout box (the default box reproduces the original 0.19 x frame size)
       const outerRadius = Math.min(width, height) * 0.46 * scale * bounce;
       const artRadius = outerRadius * 0.66;
@@ -4598,6 +4922,37 @@
       ctx.restore();
     }
 
+    // --- BEAT ENGINE CONTROLS ---
+    // [element id, state key, value parser, label id, label formatter]
+    const pctLabel = (x) => `${Math.round(x * 100)}%`;
+    const offOrPct = (x) => (x > 0 ? `${x}%` : 'Off');
+    const BEAT_CONTROLS = [
+      ['selectVizReactsTo', 'vizReactsTo', (e) => e.value],
+      ['sliderBeatRelease', 'beatRelease', (e) => parseInt(e.value, 10), 'labelBeatRelease', (x) => `${x} ms`],
+      ['sliderCameraPunch', 'cameraPunch', (e) => parseInt(e.value, 10), 'labelCameraPunch', offOrPct],
+      ['sliderFlash', 'flashAmount', (e) => parseInt(e.value, 10), 'labelFlash', offOrPct],
+      ['selectBeatSource', 'beatSource', (e) => e.value],
+      ['selectFlashColor', 'flashColor', (e) => e.value],
+      ['checkPunchLyrics', 'punchLyrics', (e) => e.checked],
+      ['selectParticleReactsTo', 'particleReactsTo', (e) => e.value],
+      ['sliderParticleReactivity', 'particleReactivity', (e) => parseInt(e.value, 10) / 100, 'labelParticleReactivity', pctLabel],
+      ['selectBgPulseReactsTo', 'bgPulseReactsTo', (e) => e.value],
+      ['sliderBgPulseAmount', 'bgPulseAmount', (e) => parseInt(e.value, 10) / 100, 'labelBgPulseAmount', pctLabel],
+      ['selectTurntableReactsTo', 'turntableReactsTo', (e) => e.value],
+      ['sliderTurntableBounce', 'turntableBounce', (e) => parseInt(e.value, 10) / 100, 'labelTurntableBounce', pctLabel],
+      ['selectLyricReactsTo', 'lyricReactsTo', (e) => e.value],
+      ['sliderLyricBounce', 'lyricBounceAmount', (e) => parseInt(e.value, 10) / 100, 'labelLyricBounce', pctLabel]
+    ];
+    for (const [id, key, parse, labelId, fmt] of BEAT_CONTROLS) {
+      const el = document.getElementById(id);
+      const apply = () => {
+        state.visualizer[key] = parse(el);
+        if (labelId) document.getElementById(labelId).textContent = fmt(state.visualizer[key]);
+      };
+      el.addEventListener('input', apply);
+      el.addEventListener('change', apply);
+    }
+
     // --- FAST OFFLINE EXPORT (WebCodecs + Mediabunny) ---
     // Renders the video frame by frame from precise audio analysis instead of recording the live
     // canvas: faster than real time, no dropped frames, identical every time. Falls back to the
@@ -4844,7 +5199,9 @@
         if (encodeError) throw encodeError;
 
         // 4. Video: analyse, draw and encode every frame from a clean, seeded animation state
-        const fftSize = analyserNode ? analyserNode.fftSize : 512;
+        const fftSize = analyserNode ? analyserNode.fftSize : ANALYSER_FFT_SIZE;
+        analysisInfo.sampleRate = decoded.sampleRate;
+        analysisInfo.fftSize = fftSize;
         const analyser = createOfflineAnalyser(mixToMono(decoded), decoded.sampleRate, fftSize, fps, state.visualizer.smoothing);
         const freq = new Uint8Array(fftSize / 2), time = new Uint8Array(fftSize / 2);
         state.export.offlineRendering = true;
@@ -5870,7 +6227,10 @@
       'checkTurntable', 'sliderTurntableSpeed', 'sliderTurntableSize',
       'selectLyricLayout', 'selectLyricFont', 'sliderLyricSize', 'sliderLyricPos',
       'colorLyricFont', 'colorLyricHighlight', 'colorLyricSecondary', 'checkBassBounce', 'checkBackdropPill',
-      'exportFormat', 'exportResolution', 'exportFps', 'exportRange', 'volumeSlider'
+      'exportFormat', 'exportResolution', 'exportFps', 'exportRange', 'volumeSlider',
+      'selectVizReactsTo', 'sliderBeatRelease', 'sliderCameraPunch', 'sliderFlash', 'selectBeatSource', 'selectFlashColor',
+      'checkPunchLyrics', 'selectParticleReactsTo', 'sliderParticleReactivity', 'selectBgPulseReactsTo', 'sliderBgPulseAmount',
+      'selectTurntableReactsTo', 'sliderTurntableBounce', 'selectLyricReactsTo', 'sliderLyricBounce'
     ];
     let settingsRestoring = false;
     let settingsSaveTimer = null;
