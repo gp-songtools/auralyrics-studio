@@ -4034,7 +4034,9 @@
           b.peak = Math.max(flux, b.peak * peakDecay);
           // Statistics need a few frames of history before they mean anything
           const threshold = Math.max(m >= 6 ? mean + 1.5 * sd : 0, b.peak * ONSET_PEAK_SHARE, 0.004);
-          if (flux > threshold && b.prevFlux <= threshold && t - b.lastOnset > 0.1 && t - b.listenFrom >= ONSET_WARMUP) {
+          // No rising-edge requirement: at low preview frame rates a bass note can sit just above the
+          // threshold on the frame before a kick. The 100 ms re-trigger guard prevents double hits.
+          if (flux > threshold && t - b.lastOnset > 0.1 && t - b.listenFrom >= ONSET_WARMUP) {
             b.onset = true;
             b.lastOnset = t;
             b.strength = Math.min(1, flux / Math.max(1e-6, b.peak));
