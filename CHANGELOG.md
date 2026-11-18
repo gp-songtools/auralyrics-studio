@@ -2,6 +2,12 @@
 
 All notable changes to AuraLyrics Studio, newest first. The app has no version numbers, so entries are grouped by date.
 
+## 2026-11-18 — Song spec
+
+### Added
+
+- **Lyrics from the song spec**: when Lyricpad has saved lyrics to the song spec (the song file the GP Song Tools share in this browser), **Use these lyrics** above the LRC editor puts them in, with section tags like [Verse] removed, ready to sync with Auto-Align, Whisper or Tap-to-Sync. A **Song spec** panel shows what the file holds. AuraLyrics only reads the song spec and never changes it; without one, nothing changes.
+
 ## 2026-11-17 — Beat engine, camera punch and flash; visualizer and logo layers
 
 ### Added

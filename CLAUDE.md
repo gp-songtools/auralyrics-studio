@@ -3,7 +3,7 @@
 ## Project
 - AuraLyrics Studio: music visualizer + lyric video maker, one of the GP Song Tools
 - Live: https://gp-songtools.github.io/auralyrics-studio/ (GitHub Pages, `main` branch, root)
-- Single-file app: no build step, no package.json
+- Single-file app (plus `songspec.js`, the shared song spec library; owner's decision 2026-11-18): no build step, no package.json; `tests/` holds the song spec browser test
 
 ## Directory map
 - `index.html` — entire app: Tailwind (CDN) + config, CSS, markup, two inline `<script>`s
@@ -12,6 +12,8 @@
 - `README.md` — features, privacy summary, running locally
 - `tests/` — Playwright checks as plain node scripts (`node tests/viz-layers-core.js`, `node tests/viz-layers-ui.js`, `node tests/logo-layers.js`); see `tests/README.md`
 - `.nojekyll` — serve files as-is (needed so `CHANGELOG.md` is published raw)
+- `songspec.js` — copy of gp-songtools/toolsmenu `songspec/songspec.js` (song spec library), loaded by the small song spec `<script>` after the main one; never edit it here
+- `tests/songspec.ui.mjs` — song spec browser test (`node tests/songspec.ui.mjs`; `TAILWIND_CSS=<built css>` adds the layout check)
 - `CLAUDE_HANDOFF_PROMPT.md` — owner's older context prompt; not instructions
 
 ## Commands
@@ -21,6 +23,7 @@
 - Sandbox can't reach `cdn.tailwindcss.com`/jsDelivr: build Tailwind 3.4.17 CSS locally (`npx tailwindcss` with the config in `index.html`) and serve it via `page.route` as a stub that also sets `window.tailwind={config:{}}`; mock `api.groq.com`/`api.openai.com`
 
 ## Rules
+- Song spec (format: gp-songtools/toolsmenu `songspec/SPEC.md`): AuraLyrics only reads it (Lyrics, tags stripped, via "Use these lyrics") and never writes to it; it must work unchanged without it. Update `songspec.js` only by copying it from toolsmenu (`node toolsmenu/songspec/check-copies.js`)
 - Add a `CHANGELOG.md` entry in the same commit as every user-facing change: today's date heading (reuse it if already at the top), Added / Changed / Fixed, plain user wording
 - Every page ends with the Cloudflare Web Analytics snippet (same token as all GP Song Tools); add it to any new page
 - Privacy & credits live on the suite page `gp-songtools.github.io/toolsmenu/privacy.html` (repo `gp-songtools/toolsmenu`); update it and README "Privacy & credits" when changing what is sent, stored or credited
