@@ -122,7 +122,8 @@
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(1.15); }
     }
-  </style>
+    .spec-panel .ssp{margin:0}
+</style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-pink-500 selection:text-white">
 
@@ -294,6 +295,8 @@
             </div>
           </div>
 
+          <div id="specPanel" class="spec-panel text-slate-300 text-xs"></div>
+          <div id="specLyr" class="text-[11px] text-slate-300 flex flex-wrap items-center gap-2" hidden></div>
           <textarea id="lrcTextInput" rows="9" class="w-full flex-1 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500 resize-none transition leading-relaxed" placeholder="[00:00.00] Enter or paste lyrics here&#10;[00:04.50] Each line with a timestamp&#10;[00:09.20] Will highlight with the music"></textarea>
 
           <div class="flex items-center justify-between pt-1">
@@ -7309,6 +7312,55 @@
       // Setup initial sample lyrics
       btnLoadSampleLyrics.click();
     });
+  </script>
+
+  <!-- GP Song Tools song spec (format: gp-songtools/toolsmenu songspec/SPEC.md). AuraLyrics only reads it:
+       Lyricpad's lyrics, [tags] removed, can fill the lyric editor. It never writes to the song spec, and
+       everything works the same without it. songspec.js is a byte-identical copy of the library. -->
+  <script src="songspec.js"></script>
+  <script>
+    (() => {
+      const SS = window.SongSpec;
+      if (!SS) return;
+      const box = document.getElementById('specLyr');
+      const editor = document.getElementById('lrcTextInput');
+      const lyrics = () => {
+        const s = SS.section(SS.parse(SS.store.load() || SS.create()), 'lyrics');
+        return s ? { text: SS.stripTags(s.body), by: s.by } : null;
+      };
+      // The editor holds these lyrics when its words match, with or without timestamps.
+      const words = (t) => SS.normalize(t.replace(/\[\d{1,2}:\d{2}(?:\.\d{1,3})?\]/g, '').split('\n').map((l) => l.trim()).filter(Boolean).join('\n'));
+      function render() {
+        const l = lyrics();
+        box.hidden = !l;
+        if (!l) return;
+        const n = l.text.split('\n').filter((x) => x.trim()).length;
+        const t = document.createElement('span');
+        t.textContent = `Song spec: lyrics from ${SS.toolName(l.by)} (${n} lines, [tags] removed).`;
+        box.replaceChildren(t);
+        if (editor.value.trim() && words(editor.value) === words(l.text)) {
+          const ok = document.createElement('span');
+          ok.className = 'text-emerald-400 font-semibold';
+          ok.textContent = 'In use: sync them with Auto-Align, Whisper or Tap-to-Sync.';
+          box.append(ok);
+          return;
+        }
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 font-medium';
+        b.textContent = 'Use these lyrics';
+        b.addEventListener('click', () => {
+          if (editor.value.trim() && !confirm('Replace the lyrics in the editor with the song spec\'s lyrics? Their timestamps will be lost.')) return;
+          editor.value = l.text;
+          editor.dispatchEvent(new Event('input', { bubbles: true }));
+          render();
+        });
+        box.append(b);
+      }
+      SS.mountPanel(document.getElementById('specPanel'), { onChange: render });
+      editor.addEventListener('input', render);
+      render();
+    })();
   </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2c5b0c69f74b496998f02d0e1f651bd5"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
