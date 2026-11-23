@@ -295,7 +295,7 @@
           <div id="specLyr" class="text-[11px] text-slate-300 flex flex-wrap items-center gap-2" hidden></div>
           <textarea id="lrcTextInput" rows="9" class="w-full flex-1 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500 resize-none transition leading-relaxed" placeholder="[00:00.00] Enter or paste lyrics here&#10;[00:04.50] Each line with a timestamp&#10;[00:09.20] Will highlight with the music"></textarea>
 
-          <div class="flex items-center justify-between pt-1">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
             <div class="flex items-center space-x-2">
               <label for="lrcFileInput" class="cursor-pointer px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium border border-slate-700 transition flex items-center space-x-1">
                 <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -308,9 +308,11 @@
                 Clear
               </button>
             </div>
-            <button id="btnCopyLrc" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium border border-slate-700 transition">
-              Copy LRC
-            </button>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button id="btnCopyLrc" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium border border-slate-700 transition">Copy LRC</button>
+              <button id="btnDownloadLrc" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium border border-slate-700 transition">Download LRC</button>
+              <a id="btnSendToFramecut" href="../framecut/" target="_blank" rel="noopener" class="px-2.5 py-1 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 text-[11px] font-semibold border border-pink-500/40 transition">Send to Framecut</a>
+            </div>
           </div>
 
           <!-- Timing Tools Bar -->
@@ -2490,6 +2492,48 @@
         document.execCommand('copy');
         showToast('Copied to clipboard!', 'success');
       }
+    });
+
+    function timedLrcForFramecut() {
+      if (state.lyrics.parsed.some(line => line.time >= 0 && line.text)) return lrcTextInput.value;
+      showToast('Sync at least one lyric line before sending or downloading.', 'info');
+      return '';
+    }
+
+    function downloadTimedLrc(lrc) {
+      const name = (state.audio.fileName || 'Lyrics').replace(/\.[^/.]+$/, '').replace(/[\\/:*?"<>|]/g, '-');
+      const url = URL.createObjectURL(new Blob([lrc], { type: 'text/plain;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = (name || 'Lyrics') + '.lrc';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+
+    document.getElementById('btnDownloadLrc').addEventListener('click', () => {
+      const lrc = timedLrcForFramecut();
+      if (lrc) downloadTimedLrc(lrc);
+    });
+    document.getElementById('btnSendToFramecut').addEventListener('click', event => {
+      const lrc = timedLrcForFramecut();
+      if (!lrc) {
+        event.preventDefault();
+        return;
+      }
+      if (/^https?:$/.test(location.protocol) && /^\/auralyrics-studio(?:\/|$)/.test(location.pathname)) {
+        try {
+          localStorage.setItem('gpsongtools.framecut.lyrics.v1', JSON.stringify({
+            version: 1, sentAt: Date.now(), lrc, audioName: state.audio.isLoaded ? state.audio.fileName : ''
+          }));
+          showToast('Lyrics ready in Framecut. Select the matching audio clip to import.', 'success');
+          return;
+        } catch {
+          // A file works when browser storage is unavailable.
+        }
+      }
+      event.preventDefault();
+      downloadTimedLrc(lrc);
+      showToast('LRC downloaded. Open it from Import Lyrics in Framecut.', 'info');
     });
 
     btnLoadSampleLyrics.addEventListener('click', () => {
