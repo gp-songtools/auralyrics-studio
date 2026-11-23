@@ -32,7 +32,13 @@ A single-file, zero-backend browser web application for uploading music creation
 
 AuraLyrics reads the GP Song Tools [song spec](https://github.com/gp-songtools/toolsmenu/blob/main/songspec/SPEC.md), one file per song that the tools share in this browser. When Lyricpad has saved lyrics there, **Use these lyrics** fills the LRC editor with them ([tags] removed). AuraLyrics never writes to the song spec. `songspec.js` is a copy of the toolsmenu library (never edit it here). Browser test: `node tests/songspec.ui.mjs` (Playwright; set `TAILWIND_CSS` to a locally built Tailwind file for the layout check).
 
+## Send lyrics to Framecut
+
+Sync the lyrics and click **Send to Framecut**. In [Framecut](https://gp-songtools.github.io/framecut/), select the matching Audio clip and choose **Import Lyrics** to create editable Text clips. **Download LRC** provides a file for the offline editor.
+
 ## Privacy & credits
+
+The Framecut handoff shares timed lyrics and the soundtrack filename in this browser. Importing or dismissing the pending handoff in Framecut clears it. Framecut discards handoffs older than a day when it checks for them.
 
 No server or account of its own. Audio, video export and in-browser Whisper all run on your device. When a fast render starts, the page downloads the open-source [Mediabunny](https://mediabunny.dev) 1.63.0 muxer (MPL-2.0) from jsDelivr; no audio or video is sent anywhere. Cloud transcription sends the audio (16 kHz mono) only to Groq or OpenAI under your own key. The key is kept in memory and forgotten when you close the tab unless you tick **Remember key on this device** (off by default). Pages load Cloudflare Web Analytics, shared by all GP Song Tools, for anonymous visit counts (no cookies; it never sees your audio, lyrics, videos or key). Details and credits: [Privacy & credits](https://gp-songtools.github.io/toolsmenu/privacy.html). Live at https://gp-songtools.github.io/auralyrics-studio/ · changes in [CHANGELOG.md](CHANGELOG.md).
 

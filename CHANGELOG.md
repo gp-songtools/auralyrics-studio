@@ -2,6 +2,12 @@
 
 All notable changes to AuraLyrics Studio, newest first. The app has no version numbers, so entries are grouped by date.
 
+## 2026-11-22 — Framecut lyrics handoff
+
+### Added
+
+- **Send to Framecut** opens Framecut with your timed lyrics ready for **Import Lyrics**. Select the matching Audio clip in Framecut first. **Download LRC** creates a file you can open in the offline editor.
+
 ## 2026-11-20 — Browser icon
 
 ### Fixed
